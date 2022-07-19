@@ -1,0 +1,87 @@
+name: 'run_private_projects_tests'
+
+on:
+  workflow_dispatch:
+  
+  schedule:
+    - cron: '30 23 * * 0'  # 23:30 every Sunday
+
+  workflow_call:  
+    secrets:
+      PRIVATE_PROJ_REPO_URL:
+        required: true
+      PRIVATE_PROJ_REPO_PAT:
+        required: true
+
+jobs:
+  private-tests:
+    name: Test access
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-18.04
+    defaults:
+      run:
+        shell: bash
+    env:
+      SHELL: /bin/bash
+      CC: clang-9
+      CXX: clang++-9
+      PROJECTS_DIR: projects
+      BUILD_FLAG: examine
+      PKGS_REL_PATH: / #/packages/Projects
+
+    steps:
+      - name: Checkout dgcode_actions
+        uses: actions/checkout@v2
+        with:
+          repository: mctools/dgcode_actions
+
+      - name: Checkout private projects repo
+        run: | 
+          git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/dg_dgcode
+
+      - name: Setup framework action
+        id: setup-framework
+        uses: ./.github/actions/setup
+        with:
+          PYTHON_VERSION: '3.9'
+          PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
+          DGBUILD_FLAG: ${{ env.BUILD_FLAG }}
+         
+      - name: Run DGCode tests
+        run: |
+          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          export DGCODE_PKG_PATH="$GITHUB_WORKSPACE/dg_dgcode${{ env.PKGS_REL_PATH }}"
+          . bootstrap.sh
+          dgbuild -at --testexcerpts=20 --${{  env.BUILD_FLAG }}
+        working-directory: ${{ env.PROJECTS_DIR }}
+        env:
+          DGDEP_IGNOREBADSHEBANG: 1
+
+      - uses: actions/upload-artifact@v2  # upload test results
+        if: always() && steps.setup-framework.outcome == 'success'
+        with:
+          name: test-results-private-projects
+          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml
+
+  report:
+    name: Test reporting
+    if: always()
+    needs: private-tests
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: test-results-private-projects
+        path: artifact_dir
+  
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        check_name: Private Projects Tests Report (EnricoMi)
+        files: artifact_dir/dgtest_results_junitformat*.xml
+        report_individual_runs: "true"
+        comment_mode: "off" #control pull request comments

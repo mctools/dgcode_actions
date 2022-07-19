@@ -1,0 +1,84 @@
+name: 'setup'
+description: 'Setup environment for dgcode'
+inputs:
+  PROJECTS_DIR:
+    description: Directory to build the framework in (must include a bootstrap script)
+    required: true
+    type: string
+  PYTHON_VERSION:
+    description: Python version to set up
+    type: string
+    default: '3.8'
+  INSTALL_GEANT4:
+    description: Install Geant4 optional dependency
+    type: boolean
+    default: true
+  DO_DGBUILD:
+    description: Option to turn off tailing dgbuild
+    type: boolean
+    default: true
+  DGBUILD_FLAG:
+    description: build flag (e.g. 'debug' or 'release')
+    type: string
+    default: examine
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout dgcode framework
+      uses: actions/checkout@v2
+      with:
+        repository: mctools/dgcode
+        path: './dgcode_framework'
+    
+    - name: Set up Python (on Linux)
+      if: runner.os == 'Linux'
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ inputs.PYTHON_VERSION }}
+
+    - name: Get OS version for caches
+      id: os-version
+      uses: sersoft-gmbh/os-version-action@v1
+      
+    - name: Get Python version for caches
+      id: python-version
+      run: echo "::set-output name=version::$(python3 -V | sed -e 's/ /-/g')"
+      shell: bash
+  
+    - name: Install basic Prerequisites
+      run: . $GITHUB_WORKSPACE/.github/scripts/instalPrerequisites.sh ${{ runner.os }}
+      shell: bash
+    
+    - name: Cache dgdepfixer install
+      id: cache-dgdepfixer
+      uses: actions/cache@v2
+      with:
+        path: dgdepfixerInstall
+        key: ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{env.CC}}-${{steps.python-version.outputs.version}}-dgdepfixer-install-20220607
+     
+    - name: Create dgdepfixer
+      if: steps.cache-dgdepfixer.outputs.cache-hit != 'true'
+      run: python3 $GITHUB_WORKSPACE/dgcode_framework/.system/depfix/src/__main__.py --create -d $GITHUB_WORKSPACE/dgdepfixerInstall
+      env:
+        DGDEP_IGNOREBADSHEBANG: 1
+      shell: bash
+      
+    - name: Install Geant4 action
+      if: inputs.INSTALL_GEANT4 == 'true'
+      id: install-geant4
+      uses: ./.github/actions/installGeant4
+      with:
+        OS_VERSION: ${{ steps.os-version.outputs.version }}
+
+    - name: Build framework
+      if: inputs.DO_DGBUILD == 'true'
+      run: |
+        . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+        . bootstrap.sh
+        python3 -c "import matplotlib.pyplot"
+        dgbuild -a --${{ inputs.DGBUILD_FLAG }}
+      working-directory: ${{ inputs.PROJECTS_DIR }}
+      env:
+        DGDEP_IGNOREBADSHEBANG: 1
+      shell: bash
