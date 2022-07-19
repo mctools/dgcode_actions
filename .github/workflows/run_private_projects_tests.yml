@@ -15,7 +15,7 @@ on:
 
 jobs:
   private-tests:
-    name: Test access
+    name: Test private projects
     strategy:
       fail-fast: false
     runs-on: ubuntu-18.04
