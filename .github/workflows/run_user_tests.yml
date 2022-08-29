@@ -18,7 +18,7 @@ jobs:
           - { user_name: ess-dg, repo_name: dgcode_projects} 
           #add user repositories here
           
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     continue-on-error: ${{ matrix.allow-failure == 1 }} 
     defaults:
       run:

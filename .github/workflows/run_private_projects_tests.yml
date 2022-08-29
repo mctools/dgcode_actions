@@ -18,7 +18,7 @@ jobs:
     name: Test private projects
     strategy:
       fail-fast: false
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     defaults:
       run:
         shell: bash
