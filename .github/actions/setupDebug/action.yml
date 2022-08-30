@@ -1,4 +1,4 @@
-name: 'setup'
+name: 'setup debug'
 description: 'Setup environment for dgcode'
 inputs:
   PROJECTS_DIR:
@@ -30,6 +30,7 @@ runs:
       with:
         repository: mctools/dgcode
         path: './dgcode_framework'
+        ref: 'debug_github_actions'
     
     - name: Set up Python (on Linux)
       if: runner.os == 'Linux'
@@ -70,6 +71,27 @@ runs:
       uses: ./.github/actions/installGeant4
       with:
         OS_VERSION: ${{ steps.os-version.outputs.version }}
+
+    - name: debug print and setup only
+      if: inputs.DO_DGBUILD == 'true'
+      run: |
+        echo "---dgdepfixerInstall---"
+        ls /home/runner/work/dgcode_actions/dgcode_actions/dgdepfixerInstall
+        echo "---venv---"
+        ls /home/runner/work/dgcode_actions/dgcode_actions/dgdepfixerInstall/venv
+        echo "---lib---"
+        ls /home/runner/work/dgcode_actions/dgcode_actions/dgdepfixerInstall/venv/lib
+        echo "---site-packages---"
+        ls /home/runner/work/dgcode_actions/dgcode_actions/dgdepfixerInstall/venv/lib/python*/site-packages
+        echo "---before setup.sh---"
+        python3 -c "import sys; import os;print(str([sys.version_info[0:2],os.__file__]))"
+        . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          echo "---after setup.sh---"
+        python3 -c "import sys; import os;print(str([sys.version_info[0:2],os.__file__]))"
+      working-directory: ${{ inputs.PROJECTS_DIR }}
+      env:
+        DGDEP_IGNOREBADSHEBANG: 1
+      shell: bash
 
     - name: Build framework
       if: inputs.DO_DGBUILD == 'true'
