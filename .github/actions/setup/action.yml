@@ -71,7 +71,7 @@ runs:
       with:
         OS_VERSION: ${{ steps.os-version.outputs.version }}
 
-    - name: Build framework
+    - name: debug print and setup only
       if: inputs.DO_DGBUILD == 'true'
       run: |
         echo "-dgdepfixerInstall-"
@@ -81,8 +81,17 @@ runs:
         echo "-lib-"
         ls /home/runner/work/dgcode_actions/dgcode_actions/dgdepfixerInstall/venv/lib
         echo "-site-packages-"
-        ls /home/runner/work/dgcode_actions/dgcode_actions/dgdepfixerInstall/venv/lib/python3.10/site-packages
+        ls /home/runner/work/dgcode_actions/dgcode_actions/dgdepfixerInstall/venv/lib/python*/site-packages
         echo "---"
+        . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+      working-directory: ${{ inputs.PROJECTS_DIR }}
+      env:
+        DGDEP_IGNOREBADSHEBANG: 1
+      shell: bash
+
+    - name: Build framework
+      if: inputs.DO_DGBUILD == 'true'
+      run: |
         . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
         . bootstrap.sh
         python3 -c "import matplotlib.pyplot"
