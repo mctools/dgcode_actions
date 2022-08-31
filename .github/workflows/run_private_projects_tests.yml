@@ -24,8 +24,8 @@ jobs:
         shell: bash
     env:
       SHELL: /bin/bash
-      CC: clang-9
-      CXX: clang++-9
+      CC: gcc-10
+      CXX: g++-10
       PROJECTS_DIR: projects
       BUILD_FLAG: examine
       PKGS_REL_PATH: / #/packages/Projects
