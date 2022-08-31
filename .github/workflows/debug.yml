@@ -38,7 +38,8 @@ jobs:
           - { os: macos-11,     CC: clang,    CXX: clang++,    python: default, build-flag: examine }
           
           # macOS 12
-          - { os: macos-12,     CC: clang,    CXX: clang++,    python: default, build-flag: examine }
+          # - { os: macos-12,     CC: clang,    CXX: clang++,    python: default, build-flag: examine }
+          - { os: macos-12,     CC: gcc-11,    CXX: g++-11,    python: default, build-flag: examine }
           
     runs-on: ${{ matrix.os }}
     defaults:
