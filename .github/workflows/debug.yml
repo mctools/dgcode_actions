@@ -11,10 +11,10 @@ jobs:
       matrix: 
         include:
           # Ubuntu-18.04
-          - { os: ubuntu-18.04, CC: clang-9,  CXX: clang++-9,  python: '3.6', build-flag: examine }
-          - { os: ubuntu-18.04, CC: clang-9,  CXX: clang++-9,  python: '3.7', build-flag: examine }
           - { os: ubuntu-18.04, CC: clang-9,  CXX: clang++-9,  python: '3.9', build-flag: examine } #oldest clang
-          - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.9', build-flag: examine } #oldest gcc
+          - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.8', build-flag: examine } #oldest gcc
+          - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.7', build-flag: examine }
+          - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.6', build-flag: examine }
 
           # Ubuntu-20.04
           - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,     python: '3.9', build-flag: examine }
@@ -26,12 +26,9 @@ jobs:
           - { os: ubuntu-20.04, CC: clang-10, CXX: clang++-10, python: '3.10', build-flag: examine }
            
           # Ubuntu-22.04
-          - { os: ubuntu-22.04, CC: clang-12, CXX: clang++-12, python: '3.9', build-flag: examine } 
-          - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.9', build-flag: examine }
-          - { os: ubuntu-22.04, CC: gcc-9,    CXX: g++-9,      python: '3.9', build-flag: examine }
-          - { os: ubuntu-22.04, CC: gcc-11,   CXX: g++-11,     python: '3.9', build-flag: examine }
-         
-          - { os: ubuntu-22.04, CC: clang-12, CXX: clang++-12, python: '3.10', build-flag: examine }
+          - { os: ubuntu-22.04, CC: clang-12, CXX: clang++-12, python: '3.10', build-flag: examine } 
+          - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.10', build-flag: examine }
+          - { os: ubuntu-22.04, CC: gcc-9,    CXX: g++-9,      python: '3.10', build-flag: examine }
           - { os: ubuntu-22.04, CC: gcc-11,   CXX: g++-11,     python: '3.10', build-flag: examine }
           
           # macOS 11
@@ -39,7 +36,7 @@ jobs:
           
           # macOS 12
           # - { os: macos-12,     CC: clang,    CXX: clang++,    python: default, build-flag: examine }
-          - { os: macos-12,     CC: gcc-11,    CXX: g++-11,    python: default, build-flag: examine }
+          # - { os: macos-12,     CC: gcc-11,    CXX: g++-11,    python: default, build-flag: examine }
           
     runs-on: ${{ matrix.os }}
     defaults:
@@ -53,7 +50,7 @@ jobs:
 
     steps:
       - name: Checkout dgcode_actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: mctools/dgcode_actions
 
