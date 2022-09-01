@@ -32,12 +32,12 @@ jobs:
 
     steps:
       - name: Checkout dgcode_actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: mctools/dgcode_actions
 
       - name: Checkout ${{ matrix.user_name }}/${{ matrix.repo_name }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ matrix.user_name }}/${{ matrix.repo_name }}
           path: './packages'

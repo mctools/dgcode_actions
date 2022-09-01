@@ -14,10 +14,10 @@ runs:
   steps:
     - name: cache Geant4
       id: cache-geant4
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: geant4-10.04.p03
-        key: ${{ runner.os }}-${{ inputs.OS_VERSION }}-${{env.CC}}-Geant4--nodata-20220622
+        key: ${{ runner.os }}-${{ inputs.OS_VERSION }}-${{env.CC}}-Geant4--nodata-20220901
         
     - name: Install Geant4
       if: steps.cache-geant4.outputs.cache-hit != 'true'
@@ -30,7 +30,7 @@ runs:
       
     - name: cache untarred geant4 data files
       id: cache-untarred-geant4-data-files
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ inputs.DATA_DIR }}
         key: untarred-geant4-data-files 
