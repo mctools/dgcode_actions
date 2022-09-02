@@ -53,6 +53,7 @@ jobs:
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           export DGCODE_PKG_PATH="$GITHUB_WORKSPACE/dg_dgcode${{ env.PKGS_REL_PATH }}"
           . bootstrap.sh
+          python3 -mpip install scipy
           dgbuild -at --testexcerpts=20 --${{  env.BUILD_FLAG }}
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
