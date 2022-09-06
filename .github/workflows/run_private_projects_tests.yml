@@ -44,6 +44,14 @@ jobs:
         run: | 
           git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/dg_dgcode
 
+      # - name: Checkout Public Projects (possible dependencies)
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: ess-dg/dgcode_projects
+      #     path: './packages'
+      # TODO: edit DGCODE_PKG_PATH in the 'Run DGCode tests' step 
+      #       export DGCODE_PKG_PATH="$GITHUB_WORKSPACE/dg_dgcode${{ env.PKGS_REL_PATH }}:$GITHUB_WORKSPACE/packages"
+
       - name: Setup framework action
         id: setup-framework
         uses: ./.github/actions/setup
