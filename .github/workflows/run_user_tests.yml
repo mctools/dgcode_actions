@@ -10,25 +10,25 @@ on:
 
 jobs:
   user-tests:
-    name: Test-${{ matrix.user_name }}/${{ matrix.repo_name }}
+    name: Test-${{ matrix.repo_name }}-${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
     strategy:
       fail-fast: false
       matrix: 
+        repo_name: ['ess-dg/dgcode_projects'] #add user repositories here
         include:
-          - { user_name: ess-dg, repo_name: dgcode_projects} 
-          #add user repositories here
-          
-    runs-on: ubuntu-20.04
-    continue-on-error: ${{ matrix.allow-failure == 1 }} 
+          - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,  python: '3.9',   build-flag: release }
+          - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,  python: '3.9',   build-flag: debug }
+          - { os: ubuntu-20.04, CC: gcc-9,    CXX: g++-9,   python: '3.8',   build-flag: release }
+          - { os: macos-11,     CC: clang,    CXX: clang++, python: default, build-flag: examine }
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     env:
       SHELL: /bin/bash
-      CC: gcc-10
-      CXX: g++-10
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
       PROJECTS_DIR: projects
-      BUILD_FLAG: examine
 
     steps:
       - name: Checkout dgcode_actions
@@ -36,26 +36,26 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: Checkout ${{ matrix.user_name }}/${{ matrix.repo_name }}
+      - name: Checkout ${{ matrix.repo_name }}
         uses: actions/checkout@v3
         with:
-          repository: ${{ matrix.user_name }}/${{ matrix.repo_name }}
+          repository: ${{ matrix.repo_name }}
           path: './packages'
 
       - name: setup framework action
         id: setup-framework
         uses: ./.github/actions/setup
         with:
-          PYTHON_VERSION: '3.9'
+          PYTHON_VERSION: ${{ matrix.python }}
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
-          DGBUILD_FLAG: ${{ env.BUILD_FLAG }}
+          DGBUILD_FLAG: ${{ matrix.build-flag }}
          
       - name: Run tests
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           export DGCODE_PKG_PATH="$GITHUB_WORKSPACE/packages"
           . bootstrap.sh
-          dgbuild -at --testexcerpts=20 --${{ env.BUILD_FLAG }}
+          dgbuild -at --testexcerpts=20 --${{ matrix.build-flag }}
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
@@ -63,13 +63,13 @@ jobs:
       - name: Rename test result
         id: rename-test-result
         if: always() && steps.setup-framework.outcome == 'success'
-        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.user_name }}_${{ matrix.repo_name }}.xml
+        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.repo_name }}_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
       - uses: actions/upload-artifact@v2  # upload test results
         if: always() && steps.rename-test-result.outcome == 'success'
         with:
           name: test-results-user-tests
-          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.user_name }}_${{ matrix.repo_name }}.xml
+          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.repo_name }}_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
   report:
     name: Test reporting
