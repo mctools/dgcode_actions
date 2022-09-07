@@ -95,10 +95,10 @@ jobs:
         path: artifact_dir
   
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2
       if: always()
       with:
         check_name: Private Projects Tests Report (EnricoMi)
-        files: artifact_dir/dgtest_results_junitformat*.xml
+        junit_files: artifact_dir/dgtest_results_junitformat*.xml
         report_individual_runs: "true"
         comment_mode: "off" #control pull request comments
