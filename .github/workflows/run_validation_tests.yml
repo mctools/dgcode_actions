@@ -103,7 +103,7 @@ jobs:
       - name: Run tests
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          export DGCODE_PKG_PATH="$GITHUB_WORKSPACE/dgcode_val"
+          export DGCODE_EXTRA_PKG_PATH="$GITHUB_WORKSPACE/dgcode_val"
           . bootstrap.sh
           dgbuild -at --testexcerpts=20 --${{ matrix.build-flag }}
         working-directory: ${{ env.PROJECTS_DIR }}
