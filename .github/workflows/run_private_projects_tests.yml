@@ -67,7 +67,7 @@ jobs:
         if: always() && steps.setup-framework.outcome == 'success'
         run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
-      - uses: actions/upload-artifact@v2  # upload test results
+      - uses: actions/upload-artifact@v3  # upload test results
         if: always() && steps.rename-test-result.outcome == 'success'
         with:
           name: test-results-private-projects

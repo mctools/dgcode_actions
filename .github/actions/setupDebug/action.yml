@@ -40,7 +40,7 @@ runs:
 
     - name: Get OS version for caches
       id: os-version
-      uses: sersoft-gmbh/os-version-action@v1
+      uses: sersoft-gmbh/os-version-action@v2
       
     - name: Get Python version for caches
       id: python-version
