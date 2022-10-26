@@ -44,7 +44,7 @@ runs:
       
     - name: Get Python version for caches
       id: python-version
-      run: echo "::set-output name=version::$(python3 -V | sed -e 's/ /-/g')"
+      run: echo "version::$(python3 -V | sed -e 's/ /-/g')" >> $GITHUB_OUTPUT
       shell: bash
   
     - name: Install basic Prerequisites
