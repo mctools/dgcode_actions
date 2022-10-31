@@ -14,7 +14,7 @@ runs:
       with:
         path: geant4-10.04.p03
         key: ${{ runner.os }}-${{ inputs.OS_VERSION }}-${{env.CC}}-Geant4--nodata-20220901
-        
+
     - name: Install Geant4
       if: steps.cache-geant4.outputs.cache-hit != 'true'
       run: |
@@ -23,14 +23,14 @@ runs:
       env:
         DGDEP_IGNOREBADSHEBANG: 1
       shell: bash
-      
+
     - name: cache untarred geant4 data files
       id: cache-untarred-geant4-data-files
       uses: actions/cache@v3
       with:
         path: Geant4data
-        key: untarred-geant4-data-files 
- 
+        key: untarred-geant4-data-files
+
     - name: Download Geant4 data
       if: steps.cache-geant4.outputs.cache-hit != 'true' || steps.cache-untarred-geant4-data-files.outputs.cache-hit != 'true'
       run: |
