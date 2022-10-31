@@ -30,7 +30,7 @@ runs:
       with:
         repository: mctools/dgcode
         path: './dgcode_framework'
-    
+
     - name: Set up Python (on Linux)
       if: runner.os == 'Linux'
       uses: actions/setup-python@v4
@@ -40,30 +40,30 @@ runs:
     - name: Get OS version for caches
       id: os-version
       uses: sersoft-gmbh/os-version-action@v2
-      
+
     - name: Get Python version for caches
       id: python-version
       run: echo "version=$(python3 -V | sed -e 's/ /-/g')" >> $GITHUB_OUTPUT
       shell: bash
-  
+
     - name: Install basic Prerequisites
       run: . $GITHUB_WORKSPACE/.github/scripts/instalPrerequisites.sh ${{ runner.os }}
       shell: bash
-    
+
     - name: Cache dgdepfixer install
       id: cache-dgdepfixer
       uses: actions/cache@v3
       with:
         path: dgdepfixerInstall
         key: ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{env.CC}}-${{steps.python-version.outputs.version}}-dgdepfixer-install-20220901
-     
+
     - name: Create dgdepfixer
       if: steps.cache-dgdepfixer.outputs.cache-hit != 'true'
       run: python3 $GITHUB_WORKSPACE/dgcode_framework/.system/depfix/src/__main__.py --create -d $GITHUB_WORKSPACE/dgdepfixerInstall
       env:
         DGDEP_IGNOREBADSHEBANG: 1
       shell: bash
-      
+
     - name: Install Geant4 action
       if: inputs.INSTALL_GEANT4 == 'true'
       id: install-geant4
