@@ -2,11 +2,11 @@ name: 'run_private_projects_tests'
 
 on:
   workflow_dispatch:
-  
+
   schedule:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
 
-  workflow_call:  
+  workflow_call:
     secrets:
       PRIVATE_PROJ_REPO_URL:
         required: true
@@ -32,7 +32,7 @@ jobs:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
       PROJECTS_DIR: projects
-      PKGS_REL_PATH: / #/packages/Projects
+      EXTRA_PKG_DIR: dgcode_private_projects
 
     steps:
       - name: Checkout dgcode_actions
@@ -42,22 +42,33 @@ jobs:
 
       - name: Checkout private projects repo
         run: | 
-          git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/dg_dgcode
+          git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
 
-      - name: Setup framework action
+      - name: Setup and build framework
         id: setup-framework
         uses: ./.github/actions/setup
         with:
           PYTHON_VERSION: ${{ matrix.python }}
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
-         
-      - name: Run DGCode tests
+
+      - name: Add Private Projects repo to the extra pkg path
+        run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
+
+      - name: Build Private Projects packages
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          export DGCODE_EXTRA_PKG_PATH="$GITHUB_WORKSPACE/dg_dgcode${{ env.PKGS_REL_PATH }}"
           . bootstrap.sh
-          dgbuild -at --testexcerpts=20 --${{ matrix.build-flag }}
+          dgbuild -a --${{ matrix.build-flag }}
+        working-directory: ${{ env.PROJECTS_DIR }}
+        env:
+          DGDEP_IGNOREBADSHEBANG: 1
+
+      - name: Run tests
+        run: |
+          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          . bootstrap.sh
+          dgbuild -at --testexcerpts=20 
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
@@ -85,7 +96,7 @@ jobs:
       with:
         name: test-results-private-projects
         path: artifact_dir
-  
+
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       if: always()
