@@ -11,7 +11,7 @@ jobs:
       matrix: 
         include:
           - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.10', build-flag: release }
-          - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.10', build-flag: debug }
+          # - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.10', build-flag: debug }
 
     runs-on: ${{ matrix.os }}
     defaults:
