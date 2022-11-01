@@ -1,0 +1,90 @@
+name: 'test_debugging_with_tmate'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  validation-tests:
+    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
+    strategy:
+      fail-fast: false
+      matrix: 
+        include:
+          - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.10', build-flag: release }
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      SHELL: /bin/bash
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+      PROJECTS_DIR: projects
+
+    steps:
+      - name: Checkout dgcode_actions
+        uses: actions/checkout@v3
+        with:
+          repository: mctools/dgcode_actions
+
+      - name: Checkout dgcode_val
+        uses: actions/checkout@v3
+        with:
+          repository: mctools/dgcode_val
+          path: './dgcode_val'
+
+      - name: Setup framework action
+        id: setup-framework
+        uses: ./.github/actions/setup
+        with:
+          PYTHON_VERSION: ${{ matrix.python }}
+          PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
+          DGBUILD_FLAG: ${{ matrix.build-flag }}
+          INSTALL_GEANT4: ${{ matrix.os !='ubuntu-22.04' }} #temp solution until Geant4 update
+         
+      - name: Run tests
+        run: |
+          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          export DGCODE_EXTRA_PKG_PATH="$GITHUB_WORKSPACE/dgcode_val"
+          . bootstrap.sh
+          dgbuild -at --testexcerpts=20 --${{ matrix.build-flag }}
+        working-directory: ${{ env.PROJECTS_DIR }}
+        env:
+          DGDEP_IGNOREBADSHEBANG: 1
+      
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
+      - name: Rename test result
+        id: rename-test-result
+        if: always() && steps.setup-framework.outcome == 'success'
+        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+
+      - uses: actions/upload-artifact@v3  # upload test results
+        if: always() && steps.rename-test-result.outcome == 'success'
+        with:
+          name: test-results-validations
+          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+
+  report:
+    name: Test reporting
+    if: always()
+    needs: validation-tests
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: test-results-validations
+        path: artifact_dir
+  
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2
+      if: always()
+      with:
+        check_name: Validation Tests Report (EnricoMi)
+        junit_files: artifact_dir/dgtest_results_junitformat*.xml
+        report_individual_runs: "true"
+        comment_mode: "off" #control pull request comments
