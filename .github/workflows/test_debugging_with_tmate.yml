@@ -32,8 +32,8 @@ jobs:
       - name: Checkout dgcode_val
         uses: actions/checkout@v3
         with:
-          repository: mctools/dgcode_val
-          path: '$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}'
+          repository: mctools/dgcode_valS
+          path: './${{ env.EXTRA_PKG_DIR }}'
 
       - name: Setup and build framework
         id: setup-framework
