@@ -78,6 +78,7 @@ jobs:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
       PROJECTS_DIR: projects
+      EXTRA_PKG_DIR: dgcode_val
 
     steps:
       - name: Checkout dgcode_actions
@@ -89,9 +90,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: mctools/dgcode_val
-          path: './dgcode_val'
+          path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: Setup framework action
+      - name: Setup and build framework
         id: setup-framework
         uses: ./.github/actions/setup
         with:
@@ -99,13 +100,24 @@ jobs:
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
           INSTALL_GEANT4: ${{ matrix.os !='ubuntu-22.04' }} #temp solution until Geant4 update
-         
+      
+      - name: Add Validation repo to the extra pkg path
+        run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
+
+      - name: Build Validation packages
+        run: |
+          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          . bootstrap.sh
+          dgbuild -a --${{ matrix.build-flag }}
+        working-directory: ${{ env.PROJECTS_DIR }}
+        env:
+          DGDEP_IGNOREBADSHEBANG: 1
+
       - name: Run tests
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          export DGCODE_EXTRA_PKG_PATH="$GITHUB_WORKSPACE/dgcode_val"
           . bootstrap.sh
-          dgbuild -at --testexcerpts=20 --${{ matrix.build-flag }}
+          dgbuild -at --testexcerpts=20
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
