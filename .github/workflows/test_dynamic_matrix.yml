@@ -9,10 +9,10 @@ on:
     inputs:
       setup-choice:
         type: choice
-        description: Software setup(s) to use
+        description: ${{ env.SETUP_MATRIX }}
         options: 
           - apple
-
+          
       run-tests:
         type: boolean
         description: Run tests
