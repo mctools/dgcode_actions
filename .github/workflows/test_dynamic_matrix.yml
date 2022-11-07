@@ -30,7 +30,7 @@ jobs:
       - name: Setup matrix combinations
         id: setup-matrix-combinations
         run: |
-          echo "${{ fromJson('[\"push\", \"pull_request\"]') }}"
+          echo "${{ fromJson('["push", "pull_request"]') }}"
           MATRIX=$SETUP_MATRIX
 
           EXCLUDE_FILTER="['macos']"
