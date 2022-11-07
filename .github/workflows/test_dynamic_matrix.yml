@@ -66,6 +66,9 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" },
           '
+
+          MATRIX=$(python -c "print('\n'.join([l for l in '$FULL_MATRIX_MULTILINE'.split('\n') if l and not 'macos-12' in l ]))")
+          
           MATRIX=$(echo $FULL_MATRIX_MULTILINE | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
     outputs:
