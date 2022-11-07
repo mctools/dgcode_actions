@@ -15,7 +15,10 @@ jobs:
       - name: Setup matrix combinations
         id: setup-matrix-combinations
         run: |
-          MATRIX_PARAMS_COMBINATIONS='{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7", "build-flag": "examine" }, { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6", "build-flag": "examine" }'
+          MATRIX_PARAMS_COMBINATIONS='
+          { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7", "build-flag": "examine" },
+          { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6", "build-flag": "examine" }
+          '
           echo "matrix-combinations={\"include\":[$MATRIX_PARAMS_COMBINATIONS]}" >> $GITHUB_OUTPUT
     outputs:
       matrix-combinations: ${{ steps.setup-matrix-combinations.outputs.matrix-combinations }}
