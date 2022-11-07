@@ -59,7 +59,6 @@ on:
       setup-choice:
         type: choice
         description: Software setup(s) to use
-        #default: 'All'
         options: [${{ env.SETUP_MATRIX }}]
 
       run-tests:
