@@ -10,7 +10,8 @@ on:
       setup-choice:
         type: choice
         description: Software setup(s) to use
-        options: ${{ env.SETUP_MATRIX }}
+        options:
+         - ${{ env.SETUP_MATRIX }}
 
       run-tests:
         type: boolean
