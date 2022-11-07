@@ -10,7 +10,7 @@ on:
       setup-choice:
         type: choice
         description: Software setup(s) to use
-        options: [${{ SETUP_MATRIX }}}]
+        options: ${{ fromJson('["push", "pull_request"]') }}
 
       run-tests:
         type: boolean
