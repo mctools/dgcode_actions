@@ -1,13 +1,22 @@
 name: 'test_dynamic_matrix'
 
 env:
-  SETUP_CHOICE: '{ \"type\": \"choice\", \"description\": \"Software setup(s) to use\", \"options\": [\"apple\", \"pear\"] }'
-  RUN_TESTS: {\"type\":\"boolean\", \"description\": \"Run tests\", \"default\": \"true\" }
+  SETUP_MATRIX: simple string
+
 
 on:
   workflow_dispatch:
-    inputs:
-      run-tests: ${{ fromJson(env.RUN_TESTS) }} 
+     inputs:
+      setup-choice:
+        type: choice
+        description: {{ env.SETUP_MATRIX }}
+        options: 
+          - apple
+
+      run-tests:
+        type: boolean
+        description: Run tests
+        default: true
 
   schedule:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
