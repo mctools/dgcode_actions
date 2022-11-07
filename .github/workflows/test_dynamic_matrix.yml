@@ -9,7 +9,7 @@ on:
     inputs:
       setup-choice:
         type: choice
-        description: ${{ env.SETUP_MATRIX }}
+        description: '${{ env.SETUP_MATRIX }}'
         options: 
           - apple
           
