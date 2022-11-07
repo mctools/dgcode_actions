@@ -2,7 +2,7 @@ name: 'test_dynamic_matrix'
 
 env:
   SETUP_CHOICE: '{ \"type\": \"choice\", \"description\": \"Software setup(s) to use\", \"options\": [\"apple\", \"pear\"] }'
-  RUN_TESTS: '{\"type\":\"boolean\", \"description\": \"Run tests\", \"default\": \"true\" }'
+  RUN_TESTS: {\"type\":\"boolean\", \"description\": \"Run tests\", \"default\": \"true\" }
 
 on:
   workflow_dispatch:
