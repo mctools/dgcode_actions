@@ -1,7 +1,7 @@
 name: 'test_dynamic_matrix'
 
 env:
-  SETUP_MATRIX: simple string
+  SETUP_MATRIX: [simple string]
 
 
 on:
@@ -10,8 +10,7 @@ on:
       setup-choice:
         type: choice
         description: Software setup(s) to use
-        options:
-         - ${{ env.SETUP_MATRIX }}
+        options: [simple string]
 
       run-tests:
         type: boolean
