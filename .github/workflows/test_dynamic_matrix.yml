@@ -77,7 +77,7 @@ jobs:
           '
 
           EXCLUDE_FILTER="['macos']"
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER] ]))")
+          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER]) ]))")
 
           echo "${{ github.event.inputs.single-setup }}"
 
