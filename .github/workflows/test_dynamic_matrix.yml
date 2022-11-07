@@ -1,17 +1,13 @@
 name: 'test_dynamic_matrix'
 
 env:
-  SETUP_MATRIX: simple string
+  SETUP_CHOICE: '{ \"type\": \"choice\", \"description\": \"Software setup(s) to use\", \"options\": [\"apple\", \"pear\"] }'
 
 
 on:
   workflow_dispatch:
      inputs:
-      setup-choice:
-        type: choice
-        description: Software setup(s) to use
-        options: 
-        - apple
+      setup-choice: ${{ fromJson(env.SETUP_CHOICE) }}
 
       run-tests:
         type: boolean
@@ -30,7 +26,7 @@ jobs:
       - name: Setup matrix combinations
         id: setup-matrix-combinations
         run: |
-          echo ${{ fromJson('["push", "pull_request"]') }}
+
           MATRIX=$SETUP_MATRIX
 
           EXCLUDE_FILTER="['macos']"
