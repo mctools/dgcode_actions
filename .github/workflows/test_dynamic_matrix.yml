@@ -7,10 +7,11 @@ on:
         type: choice
         description: Single software setup to use
         options: 
-        - { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7", "build-flag": "examine" }
-        - { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6", "build-flag": "examine" }
-        - { "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7", "build-flag": "debug"   }
-        - { "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7", "build-flag": "release" }
+        - 
+        - '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7", "build-flag": "examine" }'
+        - '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6", "build-flag": "examine" }'
+        - '{ "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7", "build-flag": "debug"   }'
+        - '{ "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7", "build-flag": "release" }'
 
   schedule:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
@@ -80,6 +81,7 @@ jobs:
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER]) ]))")
 
           echo "${{ github.event.inputs.single-setup }}"
+          MATRIX="${{ github.event.inputs.single-setup }}"
 
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
