@@ -7,7 +7,7 @@ on:
         type: choice
         description: Single software setup to use
         options: 
-        - ''
+        - ' '
         - '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7", "build-flag": "examine" }'
         - '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6", "build-flag": "examine" }'
         - '{ "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7", "build-flag": "debug"   }'
@@ -81,7 +81,7 @@ jobs:
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER]) ]))")
 
           echo "${{ github.event.inputs.single-setup }}"
-          MATRIX=$(if [ ! -z '${{ github.event.inputs.single-setup }}' ]; then echo '${{ github.event.inputs.single-setup }}'; else echo $MATRIX ; fi)
+          MATRIX=$(if [ '${{ github.event.inputs.single-setup }}' != ' ' ]; then echo '${{ github.event.inputs.single-setup }}'; else echo $MATRIX ; fi)
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
     outputs:
