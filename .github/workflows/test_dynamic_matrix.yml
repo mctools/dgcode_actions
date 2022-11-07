@@ -79,7 +79,7 @@ jobs:
       - name: Setup matrix combinations
         id: setup-matrix-combinations
         run: |
-          MATRIX='"$SETUP_MATRIX"'
+          MATRIX=$SETUP_MATRIX
 
           EXCLUDE_FILTER="['macos']"
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER]) ]))")
