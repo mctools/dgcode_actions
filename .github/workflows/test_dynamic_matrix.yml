@@ -6,15 +6,13 @@ env:
 
 on:
   workflow_dispatch:
-     inputs:
-      # setup-choice: ${{ fromJson(env.SETUP_CHOICE) }}
-
+    inputs:
       run-tests: ${{ fromJson(env.RUN_TESTS) }} 
 
   schedule:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
 
-  workflow_call: 
+  workflow_call:
 
 jobs:
   setup-matrix:
