@@ -1,7 +1,7 @@
 name: 'test_dynamic_matrix'
 
 env:
-  SETUP_MATRIX: '["{ os: ubuntu-18.04, CC: clang-9,  CXX: clang++-9,  python: 3.7, build-flag: examine }","{ os: ubuntu-18.04, CC: clang-9,  CXX: clang++-9,  python: 3.6, build-flag: examine }"]'
+  SETUP_MATRIX: '["apple", "pear"]'
 
 
 on:
