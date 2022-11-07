@@ -1,0 +1,166 @@
+name: 'run_validation_tests'
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: '30 23 * * 0'  # 23:30 every Sunday
+
+  workflow_call: 
+
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup matrix combinations
+        id: setup-matrix-combinations
+        run: |
+          MATRIX_PARAMS_COMBINATIONS='
+              { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7", "build-flag": "examine" },
+              { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6", "build-flag": "examine" }.
+          '
+          echo "matrix-combinations={\"include\":[$MATRIX_PARAMS_COMBINATIONS]}" >> $GITHUB_OUTPUT
+    outputs:
+      matrix-combinations: ${{ steps.setup-matrix-combinations.outputs.matrix-combinations }}
+  validation-tests:
+    needs: setup-matrix
+    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix-combinations) }}
+          #  echo ::set-output name=matrix-combinations::{\"include\":[$MATRIX_PARAMS_COMBINATIONS]}
+          # - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.7', build-flag: debug }
+          # - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.7', build-flag: release }
+          # - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.6', build-flag: debug }
+          # - { os: ubuntu-18.04, CC: gcc-7,    CXX: g++-7,      python: '3.6', build-flag: release }
+
+          # # Ubuntu-20.04
+          # - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,     python: '3.9', build-flag: debug }
+          # - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,     python: '3.9', build-flag: release }
+          # - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,     python: '3.8', build-flag: debug }
+          # - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,     python: '3.8', build-flag: release }
+
+          # - { os: ubuntu-20.04, CC: gcc-9,    CXX: g++-9,      python: '3.9', build-flag: debug }
+          # - { os: ubuntu-20.04, CC: gcc-9,    CXX: g++-9,      python: '3.9', build-flag: release }
+          # - { os: ubuntu-20.04, CC: gcc-9,    CXX: g++-9,      python: '3.8', build-flag: debug }
+          # - { os: ubuntu-20.04, CC: gcc-9,    CXX: g++-9,      python: '3.8', build-flag: release }
+
+          # - { os: ubuntu-20.04, CC: clang-12, CXX: clang++-12, python: '3.9', build-flag: examine }
+          # - { os: ubuntu-20.04, CC: clang-12, CXX: clang++-12, python: '3.9', build-flag: release }
+          # - { os: ubuntu-20.04, CC: clang-12, CXX: clang++-12, python: '3.8', build-flag: examine }
+          # - { os: ubuntu-20.04, CC: clang-12, CXX: clang++-12, python: '3.8', build-flag: release }
+
+          # - { os: ubuntu-20.04, CC: clang-10, CXX: clang++-10, python: '3.9', build-flag: examine }
+          # - { os: ubuntu-20.04, CC: clang-10, CXX: clang++-10, python: '3.9', build-flag: release }
+          # - { os: ubuntu-20.04, CC: clang-10, CXX: clang++-10, python: '3.8', build-flag: examine }
+          # - { os: ubuntu-20.04, CC: clang-10, CXX: clang++-10, python: '3.8', build-flag: release }
+
+          # # Ubuntu-22.04
+          # - { os: ubuntu-22.04, CC: clang-12, CXX: clang++-12, python: '3.10', build-flag: debug }
+          # - { os: ubuntu-22.04, CC: clang-12, CXX: clang++-12, python: '3.10', build-flag: release }
+
+          # - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.10', build-flag: debug }
+          # - { os: ubuntu-22.04, CC: clang-14, CXX: clang++-14, python: '3.10', build-flag: release }
+
+          # - { os: ubuntu-22.04, CC: gcc-9,    CXX: g++-9,      python: '3.10', build-flag: debug }
+          # - { os: ubuntu-22.04, CC: gcc-9,    CXX: g++-9,      python: '3.10', build-flag: release }
+
+          # - { os: ubuntu-22.04, CC: gcc-11,   CXX: g++-11,     python: '3.10', build-flag: debug }
+          # - { os: ubuntu-22.04, CC: gcc-11,   CXX: g++-11,     python: '3.10', build-flag: release }
+
+          # # macOS 11
+          # - { os: macos-11,     CC: clang,    CXX: clang++,    python: default, build-flag: debug }
+          # - { os: macos-11,     CC: clang,    CXX: clang++,    python: default, build-flag: release }
+
+          # macOS 12
+          # - { os: macos-12,     CC: clang,    CXX: clang++,    python: default, build-flag: debug }
+          # - { os: macos-12,     CC: clang,    CXX: clang++,    python: default, build-flag: release }
+          # - { os: macos-12,     CC: gcc-11,    CXX: g++-11,    python: default, build-flag: release }
+
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.allow-failure == 1 }} 
+    defaults:
+      run:
+        shell: bash
+    env:
+      SHELL: /bin/bash
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+      PROJECTS_DIR: projects
+      EXTRA_PKG_DIR: dgcode_val
+
+    steps:
+      - name: Checkout dgcode_actions
+        uses: actions/checkout@v3
+        with:
+          repository: mctools/dgcode_actions
+
+      - name: Checkout dgcode_val
+        uses: actions/checkout@v3
+        with:
+          repository: mctools/dgcode_val
+          path: './${{ env.EXTRA_PKG_DIR }}'
+
+      - name: Setup and build framework
+        id: setup-framework
+        uses: ./.github/actions/setup
+        with:
+          PYTHON_VERSION: ${{ matrix.python }}
+          PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
+          DGBUILD_FLAG: ${{ matrix.build-flag }}
+          INSTALL_GEANT4: ${{ matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12' }} #temp solution until Geant4 update
+
+      - name: Add Validation repo to the extra pkg path
+        run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
+
+      - name: Build Validation packages
+        run: |
+          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          . bootstrap.sh
+          dgbuild -a --${{ matrix.build-flag }}
+        working-directory: ${{ env.PROJECTS_DIR }}
+        env:
+          DGDEP_IGNOREBADSHEBANG: 1
+
+      - name: Run tests
+        run: |
+          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          . bootstrap.sh
+          dgbuild -at --testexcerpts=20
+        working-directory: ${{ env.PROJECTS_DIR }}
+        env:
+          DGDEP_IGNOREBADSHEBANG: 1
+
+      - name: Rename test result
+        id: rename-test-result
+        if: always() && steps.setup-framework.outcome == 'success'
+        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+
+      - uses: actions/upload-artifact@v3  # upload test results
+        if: always() && steps.rename-test-result.outcome == 'success'
+        with:
+          name: test-results-validations
+          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+
+  report:
+    name: Test reporting
+    if: always()
+    needs: validation-tests
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: test-results-validations
+        path: artifact_dir
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2
+      if: always()
+      with:
+        check_name: Validation Tests Report (EnricoMi)
+        junit_files: artifact_dir/dgtest_results_junitformat*.xml
+        report_individual_runs: "true"
+        comment_mode: "off" #control pull request comments
