@@ -81,7 +81,7 @@ jobs:
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER]) ]))")
 
           echo "${{ github.event.inputs.single-setup }}"
-          MATRIX=$(if [ ! -z '${{ github.event.inputs.single-setup }}' ]; then echo '${{ github.event.inputs.single-setup }}'; else echo $MATRIX ; fi')
+          MATRIX=$(if [ ! -z '${{ github.event.inputs.single-setup }}' ]; then echo '${{ github.event.inputs.single-setup }}'; else echo $MATRIX ; fi)
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
     outputs:
