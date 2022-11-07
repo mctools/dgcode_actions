@@ -1,7 +1,7 @@
 name: 'test_dynamic_matrix'
 
 env:
-  SETUP_MATRIX: '["apple", "pear"]'
+  SETUP_MATRIX: 'simple string'
 
 
 on:
@@ -10,7 +10,7 @@ on:
       setup-choice:
         type: choice
         description: Software setup(s) to use
-        options: ${{ fromJson(env.SETUP_MATRIX) }}
+        options: ${{ env.SETUP_MATRIX }}
 
       run-tests:
         type: boolean
