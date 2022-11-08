@@ -162,7 +162,7 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python }}
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
-          INSTALL_GEANT4: ${{ ! inputs.without-geant4 }} #${{ matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12' }} #temp solution until Geant4 update
+          INSTALL_GEANT4: ${{ inputs.without-geant4 != false }} #${{ matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12' }} #temp solution until Geant4 update
 
       - name: Add Validation repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
@@ -180,7 +180,7 @@ jobs:
 
       - name: Run tests
         id: run-tests
-        if: ! inputs.skip-tests && steps.setup-validation-packages.outcome == 'success'
+        if: inputs.skip-tests != false && steps.setup-validation-packages.outcome == 'success'
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
@@ -191,18 +191,18 @@ jobs:
 
       - name: Rename test result
         id: rename-test-result
-        if: ! inputs.skip-tests && steps.run-tests.outcome == 'success'
+        if: inputs.skip-tests != false && steps.run-tests.outcome == 'success'
         run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
       - uses: actions/upload-artifact@v3  # upload test results
-        if: ! inputs.skip-tests && steps.rename-test-result.outcome == 'success'
+        if: inputs.skip-tests != false && steps.rename-test-result.outcome == 'success'
         with:
           name: test-results-validations
           path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
   report:
     name: Test reporting
-    if: ! inputs.skip-tests
+    if: inputs.skip-tests != false
     needs: validation-tests
     runs-on: ubuntu-latest
     steps:
