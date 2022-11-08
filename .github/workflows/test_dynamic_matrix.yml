@@ -43,13 +43,17 @@ on:
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "release" }']
       include-filter-any:
         type: string
-        description: Setup inclusion filter - ANY of the keywords (comma separated)
+        description: Setup inclusion filter - has ANY of the keywords (comma separated)
       include-filter-all:
         type: string
-        description: Setup inclusion filter - ALL of the keywords (comma separated)
-      exclude-filters:
+        description: Setup inclusion filter - has ALL of the keywords (comma separated)
+      exclude-filters-any:
         type: string
-        description: Setup exclusion filter - not ANY of the keywords (comma separated)
+        description: Setup exclusion filter - has not ANY of the keywords (comma separated)
+        default: ''
+      exclude-filters-all:
+        type: string
+        description: Setup exclusion filter - has not ALL of the keywords (comma separated)
         default: ''
       run-tests:
         type: boolean
@@ -106,8 +110,10 @@ jobs:
 
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '${{ inputs.include-filter-any }}'.split(',')]) ]))")
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and all([f.strip() in l for f in '${{ inputs.include-filter-all }}'.split(',')]) ]))")
-          EXCLUDE_FILTER=$(if [ '${{ inputs.exclude-filters }}' != '' ]; then echo '${{ inputs.exclude-filters }}' ; else echo 'do not exclude any' ; fi)
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '$EXCLUDE_FILTER'.split(',')]) ]))")
+          EXCLUDE_FILTER_ANY=$(if [ '${{ inputs.exclude-filters-any }}' != '' ]; then echo '${{ inputs.exclude-filters-any }}' ; else echo 'do not exclude any' ; fi)
+          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '$EXCLUDE_FILTER_ANY'.split(',')]) ]))")
+          EXCLUDE_FILTER_ALL=$(if [ '${{ inputs.exclude-filters-all }}' != '' ]; then echo '${{ inputs.exclude-filters-all }}' ; else echo 'do not exclude any' ; fi)
+          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not all([f.strip() in l for f in '$EXCLUDE_FILTER_ALL'.split(',')]) ]))")
 
           MATRIX=$(if [ '${{ inputs.setup-choice }}' = 'All' ]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
           echo $MATRIX
