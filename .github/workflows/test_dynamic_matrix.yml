@@ -43,17 +43,17 @@ on:
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "release" }']
       include-filter-any:
         type: string
-        description: Setup inclusion filter - has ANY of the keywords (comma separated)
+        description: Setup filter - include if it has ANY of the keywords (comma separated)
       include-filter-all:
         type: string
-        description: Setup inclusion filter - has ALL of the keywords (comma separated)
+        description: Setup filter - include if it has ALL of the keywords (comma separated)
       exclude-filters-any:
         type: string
-        description: Setup exclusion filter - has not ANY of the keywords (comma separated)
+        description: Setup filter - exclude if it has ANY of the keywords (comma separated)
         default: ''
       exclude-filters-all:
         type: string
-        description: Setup exclusion filter - has not ALL of the keywords (comma separated)
+        description: Setup filter - exclude if it has ALL of the keywords (comma separated)
         default: ''
       without-geant4:
         type: boolean
