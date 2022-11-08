@@ -55,6 +55,10 @@ on:
         type: string
         description: Setup filter - exclude if it has ALL of the keywords (comma separated)
         default: ''
+      manual-debugging:
+        type: boolean
+        description: Launch manual debugging tmate session on failure
+        default: false
       without-geant4:
         type: boolean
         description: Do not install Geant4
@@ -188,6 +192,12 @@ jobs:
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
+
+      - name: Setup tmate session for manual debugging
+        uses: mxschmitt/action-tmate@v3
+        if: always() && inputs.manual-debugging == true && (steps.setup-framework.outcome != 'success' || steps.setup-validation-packages.outcome != 'success' || steps.run-tests.outcome != 'success')
+        with:
+          limit-access-to-actor: true
 
       - name: Rename test result
         id: rename-test-result
