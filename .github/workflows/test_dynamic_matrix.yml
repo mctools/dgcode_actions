@@ -55,6 +55,10 @@ on:
         type: string
         description: Setup filter - exclude if it has ALL of the keywords (comma separated)
         default: ''
+      manual-debugging:
+        type: boolean
+        description: Launch manual debugging tmate session on failure
+        default: false
       without-geant4:
         type: boolean
         description: Do not install Geant4
@@ -119,7 +123,7 @@ jobs:
           EXCLUDE_FILTER_ALL=$(if [ '${{ inputs.exclude-filters-all }}' != '' ]; then echo '${{ inputs.exclude-filters-all }}' ; else echo 'do not exclude any' ; fi)
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not all([f.strip() in l for f in '$EXCLUDE_FILTER_ALL'.split(',')]) ]))")
 
-          MATRIX=$(if [ '${{ inputs.setup-choice }}' = 'All' ]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
+          MATRIX=$(if [[ '${{ inputs.setup-choice }}' == 'All' || '${{ inputs.setup-choice }}' == '' ]]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
     outputs:
@@ -188,6 +192,12 @@ jobs:
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
+
+      - name: Setup tmate session for manual debugging
+        uses: mxschmitt/action-tmate@v3
+        if: input.manual-debugging == true && (steps.setup-framework.outcome == 'failure' || steps.setup-validation-packages.outcome == 'failure' || steps.run-tests.outcome == 'failure')
+        with:
+          limit-access-to-actor: true
 
       - name: Rename test result
         id: rename-test-result
