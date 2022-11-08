@@ -195,7 +195,7 @@ jobs:
 
       - name: Setup tmate session for manual debugging
         uses: mxschmitt/action-tmate@v3
-        if: always() && inputs.manual-debugging == true && (steps.setup-framework.outcome == 'failure' || steps.setup-validation-packages.outcome == 'failure' || steps.run-tests.outcome == 'failure')
+        if: always()
         with:
           limit-access-to-actor: true
 
