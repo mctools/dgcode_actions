@@ -195,7 +195,7 @@ jobs:
 
       - name: Setup tmate session for manual debugging
         uses: mxschmitt/action-tmate@v3
-        if: always()
+        if: inputs.manual-debugging == true
         with:
           limit-access-to-actor: true
 
