@@ -41,6 +41,10 @@ on:
           '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" }',
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   }',
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" }']
+      exclude-filters:
+        type: string
+        description: Setup exclusion filters
+        default: 'macos'
       run-tests:
         type: boolean
         description: Run tests
@@ -94,11 +98,10 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" }'
 
-          EXCLUDE_FILTER="['macos']"
+          EXCLUDE_FILTER="['${{ inputs.exclude-filters }}']"
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER]) ]))")
 
-          echo "${{ github.event.inputs.setup-choice }}"
-          MATRIX=$(if [ '${{ github.event.inputs.setup-choice }}' = 'All' ]; then echo $MATRIX; else echo '${{ github.event.inputs.setup-choice }}' ; fi)
+          MATRIX=$(if [ '${{ inputs.setup-choice }}' = 'All' ]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
     outputs:
@@ -156,7 +159,7 @@ jobs:
           DGDEP_IGNOREBADSHEBANG: 1
 
       - name: Run tests
-        if: ${{ github.event.inputs.run-tests }}
+        if: ${{ inputs.run-tests }}
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
@@ -167,18 +170,18 @@ jobs:
 
       - name: Rename test result
         id: rename-test-result
-        if: ${{ github.event.inputs.run-tests }} && steps.setup-framework.outcome == 'success'
+        if: ${{ inputs.run-tests }} && steps.setup-framework.outcome == 'success'
         run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
       - uses: actions/upload-artifact@v3  # upload test results
-        if: ${{ github.event.inputs.run-tests }} && steps.rename-test-result.outcome == 'success'
+        if: ${{ inputs.run-tests }} && steps.rename-test-result.outcome == 'success'
         with:
           name: test-results-validations
           path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
   report:
     name: Test reporting
-    if: ${{ github.event.inputs.run-tests }}
+    if: ${{ inputs.run-tests }}
     needs: validation-tests
     runs-on: ubuntu-latest
     steps:
