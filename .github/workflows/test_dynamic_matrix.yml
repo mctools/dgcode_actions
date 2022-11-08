@@ -98,7 +98,7 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" }'
 
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in '${{ inputs.exclude-filters }}'.split(',')]) ]))")
+          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '${{ inputs.exclude-filters }}'.split(',')]) ]))")
 
           MATRIX=$(if [ '${{ inputs.setup-choice }}' = 'All' ]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
