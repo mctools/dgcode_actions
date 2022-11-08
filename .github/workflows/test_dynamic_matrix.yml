@@ -109,107 +109,108 @@ jobs:
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '${{ inputs.include-filters-any }}'.split(',')]) ]))")
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and all([f.strip() in l for f in '${{ inputs.include-filter-all }}'.split(',')]) ]))")
           EXCLUDE_FILTER=$(if [ '${{ inputs.exclude-filters }}' != '' ]; then echo '${{ inputs.exclude-filters }}' ; else echo 'do not exclude any' ; fi)
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '${{ inputs.exclude-filters }}'.split(',')]) ]))")
+          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '$EXCLUDE_FILTER'.split(',')]) ]))")
 
           MATRIX=$(if [ '${{ inputs.setup-choice }}' = 'All' ]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
+          echo $MATRIX
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
     outputs:
       matrix-combinations: ${{ steps.setup-matrix-combinations.outputs.matrix-combinations }}
 
-  validation-tests:
-    needs: setup-matrix
-    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix-combinations) }}
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow-failure == 1 }}
-    defaults:
-      run:
-        shell: bash
-    env:
-      SHELL: /bin/bash
-      CC: ${{ matrix.CC }}
-      CXX: ${{ matrix.CXX }}
-      PROJECTS_DIR: projects
-      EXTRA_PKG_DIR: dgcode_val
+  # validation-tests:
+  #   needs: setup-matrix
+  #   name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix-combinations) }}
+  #   runs-on: ${{ matrix.os }}
+  #   continue-on-error: ${{ matrix.allow-failure == 1 }}
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   env:
+  #     SHELL: /bin/bash
+  #     CC: ${{ matrix.CC }}
+  #     CXX: ${{ matrix.CXX }}
+  #     PROJECTS_DIR: projects
+  #     EXTRA_PKG_DIR: dgcode_val
 
-    steps:
-      - name: Checkout dgcode_actions
-        uses: actions/checkout@v3
-        with:
-          repository: mctools/dgcode_actions
+  #   steps:
+  #     - name: Checkout dgcode_actions
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: mctools/dgcode_actions
 
-      - name: Checkout dgcode_val
-        uses: actions/checkout@v3
-        with:
-          repository: mctools/dgcode_val
-          path: './${{ env.EXTRA_PKG_DIR }}'
+  #     - name: Checkout dgcode_val
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: mctools/dgcode_val
+  #         path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: Setup and build framework
-        id: setup-framework
-        uses: ./.github/actions/setup
-        with:
-          PYTHON_VERSION: ${{ matrix.python }}
-          PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
-          DGBUILD_FLAG: ${{ matrix.build-flag }}
-          INSTALL_GEANT4: ${{ matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12' }} #temp solution until Geant4 update
+  #     - name: Setup and build framework
+  #       id: setup-framework
+  #       uses: ./.github/actions/setup
+  #       with:
+  #         PYTHON_VERSION: ${{ matrix.python }}
+  #         PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
+  #         DGBUILD_FLAG: ${{ matrix.build-flag }}
+  #         INSTALL_GEANT4: ${{ matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12' }} #temp solution until Geant4 update
 
-      - name: Add Validation repo to the extra pkg path
-        run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
+  #     - name: Add Validation repo to the extra pkg path
+  #       run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
 
-      - name: Build Validation packages
-        id: setup-validation-packages
-        if: steps.setup-framework.outcome == 'success'
-        run: |
-          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          . bootstrap.sh
-          dgbuild -a --${{ matrix.build-flag }}
-        working-directory: ${{ env.PROJECTS_DIR }}
-        env:
-          DGDEP_IGNOREBADSHEBANG: 1
+  #     - name: Build Validation packages
+  #       id: setup-validation-packages
+  #       if: steps.setup-framework.outcome == 'success'
+  #       run: |
+  #         . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+  #         . bootstrap.sh
+  #         dgbuild -a --${{ matrix.build-flag }}
+  #       working-directory: ${{ env.PROJECTS_DIR }}
+  #       env:
+  #         DGDEP_IGNOREBADSHEBANG: 1
 
-      - name: Run tests
-        id: run-tests
-        if: inputs.run-tests && steps.setup-validation-packages.outcome == 'success'
-        run: |
-          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          . bootstrap.sh
-          dgbuild -at --testexcerpts=20
-        working-directory: ${{ env.PROJECTS_DIR }}
-        env:
-          DGDEP_IGNOREBADSHEBANG: 1
+  #     - name: Run tests
+  #       id: run-tests
+  #       if: inputs.run-tests && steps.setup-validation-packages.outcome == 'success'
+  #       run: |
+  #         . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+  #         . bootstrap.sh
+  #         dgbuild -at --testexcerpts=20
+  #       working-directory: ${{ env.PROJECTS_DIR }}
+  #       env:
+  #         DGDEP_IGNOREBADSHEBANG: 1
 
-      - name: Rename test result
-        id: rename-test-result
-        if: inputs.run-tests && steps.run-tests.outcome == 'success'
-        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+  #     - name: Rename test result
+  #       id: rename-test-result
+  #       if: inputs.run-tests && steps.run-tests.outcome == 'success'
+  #       run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
-      - uses: actions/upload-artifact@v3  # upload test results
-        if: inputs.run-tests && steps.rename-test-result.outcome == 'success'
-        with:
-          name: test-results-validations
-          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+  #     - uses: actions/upload-artifact@v3  # upload test results
+  #       if: inputs.run-tests && steps.rename-test-result.outcome == 'success'
+  #       with:
+  #         name: test-results-validations
+  #         path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
-  report:
-    name: Test reporting
-    if: inputs.run-tests
-    needs: validation-tests
-    runs-on: ubuntu-latest
-    steps:
+  # report:
+  #   name: Test reporting
+  #   if: inputs.run-tests
+  #   needs: validation-tests
+  #   runs-on: ubuntu-latest
+  #   steps:
 
-    - name: Download a single artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: test-results-validations
-        path: artifact_dir
+  #   - name: Download a single artifact
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: test-results-validations
+  #       path: artifact_dir
 
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v2
-      if: always()
-      with:
-        check_name: Validation Tests Report (EnricoMi)
-        junit_files: artifact_dir/dgtest_results_junitformat*.xml
-        report_individual_runs: "true"
-        comment_mode: "off" #control pull request comments
+  #   - name: Publish Unit Test Results
+  #     uses: EnricoMi/publish-unit-test-result-action/composite@v2
+  #     if: always()
+  #     with:
+  #       check_name: Validation Tests Report (EnricoMi)
+  #       junit_files: artifact_dir/dgtest_results_junitformat*.xml
+  #       report_individual_runs: "true"
+  #       comment_mode: "off" #control pull request comments
