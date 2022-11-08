@@ -104,7 +104,7 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "release" }'
 
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '${{ inputs.include-filters-any }}'.split(',')]) ]))")
+          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '${{ inputs.include-filter-any }}'.split(',')]) ]))")
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and all([f.strip() in l for f in '${{ inputs.include-filter-all }}'.split(',')]) ]))")
           EXCLUDE_FILTER=$(if [ '${{ inputs.exclude-filters }}' != '' ]; then echo '${{ inputs.exclude-filters }}' ; else echo 'do not exclude any' ; fi)
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '$EXCLUDE_FILTER'.split(',')]) ]))")
