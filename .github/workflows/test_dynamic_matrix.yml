@@ -50,9 +50,15 @@ on:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
 
   workflow_call:
-
-env:
-  SETUP_MATRIX: '
+  
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup matrix combinations
+        id: setup-matrix-combinations
+        run: |
+          MATRIX='
           { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7", "build-flag": "examine" },
           { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6", "build-flag": "examine" },
           { "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7", "build-flag": "debug"   },
@@ -88,14 +94,6 @@ env:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" },
           '
-jobs:
-  setup-matrix:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup matrix combinations
-        id: setup-matrix-combinations
-        run: |
-          MATRIX=$SETUP_MATRIX
 
           EXCLUDE_FILTER="['macos']"
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f in l for f in $EXCLUDE_FILTER]) ]))")
