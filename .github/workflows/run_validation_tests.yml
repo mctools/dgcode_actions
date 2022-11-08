@@ -119,7 +119,7 @@ jobs:
           EXCLUDE_FILTER_ALL=$(if [ '${{ inputs.exclude-filters-all }}' != '' ]; then echo '${{ inputs.exclude-filters-all }}' ; else echo 'do not exclude any' ; fi)
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not all([f.strip() in l for f in '$EXCLUDE_FILTER_ALL'.split(',')]) ]))")
 
-          MATRIX=$(if [ '${{ inputs.setup-choice }}' = 'All' ]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
+          MATRIX=$(if [[ '${{ inputs.setup-choice }}' == 'All' || '${{ inputs.setup-choice }}' == '' ]]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
     outputs:
