@@ -162,7 +162,7 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python }}
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
-          INSTALL_GEANT4: ${{ inputs.without-geant4 != false }} #${{ matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12' }} #temp solution until Geant4 update
+          INSTALL_GEANT4: ${{ inputs.without-geant4 != true && (matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12') }} #temp solution until Geant4 update
 
       - name: Add Validation repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
