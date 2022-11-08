@@ -44,15 +44,13 @@ on:
       include-filter-any:
         type: string
         description: Setup inclusion filter - ANY of the keywords (comma separated)
-        default: ''
       include-filter-all:
         type: string
         description: Setup inclusion filter - ALL of the keywords (comma separated)
-        default: ''
       exclude-filters:
         type: string
         description: Setup exclusion filter - not ANY of the keywords (comma separated)
-        default: 'macos'
+        default: ''
       run-tests:
         type: boolean
         description: Run tests
