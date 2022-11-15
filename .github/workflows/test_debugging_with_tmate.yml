@@ -61,7 +61,7 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild -at --testexcerpts=20
+          dgbuild -at --testexcerpts=100
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
