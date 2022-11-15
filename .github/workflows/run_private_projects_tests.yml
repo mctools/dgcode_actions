@@ -22,7 +22,7 @@ jobs:
           - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,     python: '3.9', build-flag: release }
           - { os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,     python: '3.9', build-flag: debug }
           - { os: ubuntu-20.04, CC: gcc-9,   CXX: g++-9,     python: '3.8', build-flag: release }
-          - { os: macos-11,  CC: clang,    CXX: clang++,    python: default, build-flag: examine }
+          - { os: macos-11,  CC: clang,    CXX: clang++,    python: '3.10', build-flag: examine }
     runs-on: ${{ matrix.os }}
     defaults:
       run:

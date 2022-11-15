@@ -31,8 +31,7 @@ runs:
         repository: mctools/dgcode
         path: './dgcode_framework'
 
-    - name: Set up Python (on Linux)
-      if: runner.os == 'Linux'
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.PYTHON_VERSION }}

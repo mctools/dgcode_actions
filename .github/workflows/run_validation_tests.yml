@@ -37,10 +37,14 @@ on:
           '{ "os": "ubuntu-22.04", "CC": "gcc-9",   "CXX": "g++-9",       "python": "3.10", "build-flag": "release" }',
           '{ "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "debug"   }',
           '{ "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "release" }',
-          '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "debug"   }',
-          '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "release" }',
-          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "debug"   }',
-          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "release" }']
+          '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   }',
+          '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" }',
+          '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   }',
+          '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" }',
+          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   }',
+          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" }',
+          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   }',
+          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" }']
       include-filter-any:
         type: string
         description: Setup filter - include if it has ANY of the keywords (comma separated)
@@ -111,10 +115,14 @@ jobs:
           { "os": "ubuntu-22.04", "CC": "gcc-9",   "CXX": "g++-9",       "python": "3.10", "build-flag": "release" },
           { "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "debug"   },
           { "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "release" },
-          { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "debug"   },
-          { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "release" },
-          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "debug"   },
-          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "default", "build-flag": "release" }'
+          { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   },
+          { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" },
+          { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   },
+          { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" },
+          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   },
+          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" },
+          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "debug"   },
+          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.10", "build-flag": "release" }'
 
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '${{ inputs.include-filter-any }}'.split(',')]) ]))")
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and all([f.strip() in l for f in '${{ inputs.include-filter-all }}'.split(',')]) ]))")

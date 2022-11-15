@@ -18,7 +18,7 @@ jobs:
           - {repo_name: ess-dg/dgcode_projects, os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,  python: '3.9',   build-flag: release }
           - {repo_name: ess-dg/dgcode_projects, os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,  python: '3.9',   build-flag: debug }
           - {repo_name: ess-dg/dgcode_projects, os: ubuntu-20.04, CC: gcc-9,    CXX: g++-9,   python: '3.8',   build-flag: release }
-          - {repo_name: ess-dg/dgcode_projects, os: macos-11,     CC: clang,    CXX: clang++, python: default, build-flag: examine }
+          - {repo_name: ess-dg/dgcode_projects, os: macos-11,     CC: clang,    CXX: clang++, python: '3.10', build-flag: examine }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
