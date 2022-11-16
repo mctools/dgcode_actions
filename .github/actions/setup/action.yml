@@ -21,6 +21,10 @@ inputs:
     description: build flag (e.g. 'debug' or 'release')
     type: string
     default: examine
+  DGCODE_BRANCH:
+    description: DGCode (framework) branch to be used
+    type: string
+    default: main
 
 runs:
   using: "composite"
@@ -30,6 +34,7 @@ runs:
       with:
         repository: mctools/dgcode
         path: './dgcode_framework'
+        ref: ${{ inputs.DGCODE_BRANCH }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
