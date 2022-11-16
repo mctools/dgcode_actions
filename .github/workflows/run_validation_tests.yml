@@ -220,7 +220,7 @@ jobs:
 
   report:
     name: Test reporting
-    if: inputs.skip-tests != true
+    if: always() && inputs.skip-tests != true
     needs: validation-tests
     runs-on: ubuntu-latest
     steps:
