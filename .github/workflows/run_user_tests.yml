@@ -2,23 +2,68 @@ name: 'run_user_tests'
 
 on:
   workflow_dispatch:
+    inputs:
+      dgcode-branch:
+        type: string
+        description: Framework branch to use
+        default: main
+      setup-choice:
+        type: choice
+        description: Software setup(s) to use
+        options: ['All',
+          '{ "os": "ubuntu-20.04", "CC": "gcc-10", "CXX": "g++-10",  "python": "3.9",  "build-flag": "release" }',
+          '{ "os": "ubuntu-20.04", "CC": "gcc-10", "CXX": "g++-10",  "python": "3.9",  "build-flag": "debug"   }',
+          '{ "os": "ubuntu-20.04", "CC": "gcc-9",  "CXX": "g++-9",   "python": "3.8",  "build-flag": "release" }',
+          '{ "os": "macos-11",     "CC": "clang",  "CXX": "clang++", "python": "3.10", "build-flag": "debug"   }']
+      manual-debugging:
+        type: boolean
+        description: Launch manual debugging tmate session on failure
+        default: false
+      without-geant4:
+        type: boolean
+        description: Do not install Geant4
+        default: false
+      skip-tests:
+        type: boolean
+        description: Skip running the tests
+        default: false
 
   schedule:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
 
   workflow_call:
+    inputs:
+      dgcode-branch:
+        description: Framework branch to use
+        required: false
+        type: string
+        default: main
 
 jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup matrix combinations
+        id: setup-matrix-combinations
+        run: |
+          MATRIX='
+          { "os": "ubuntu-20.04", "CC": "gcc-10", "CXX": "g++-10",  "python": "3.9",  "build-flag": "release" },
+          { "os": "ubuntu-20.04", "CC": "gcc-10", "CXX": "g++-10",  "python": "3.9",  "build-flag": "debug"   },
+          { "os": "ubuntu-20.04", "CC": "gcc-9",  "CXX": "g++-9",   "python": "3.8",  "build-flag": "release" },
+          { "os": "macos-11",     "CC": "clang",  "CXX": "clang++", "python": "3.10", "build-flag": "debug"   }'
+
+          MATRIX=$(if [[ '${{ inputs.setup-choice }}' == 'All' || '${{ inputs.setup-choice }}' == '' ]]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
+          MATRIX=$(echo $MATRIX | tr '\n' ' ')
+          echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
+    outputs:
+      matrix-combinations: ${{ steps.setup-matrix-combinations.outputs.matrix-combinations }}
+
   user-tests:
-    name: Test-${{ matrix.repo_name }}-${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
+    needs: setup-matrix
+    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
     strategy:
       fail-fast: false
-      matrix: 
-        include:
-          - {repo_name: ess-dg/dgcode_projects, os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,  python: '3.9',   build-flag: release }
-          - {repo_name: ess-dg/dgcode_projects, os: ubuntu-20.04, CC: gcc-10,   CXX: g++-10,  python: '3.9',   build-flag: debug }
-          - {repo_name: ess-dg/dgcode_projects, os: ubuntu-20.04, CC: gcc-9,    CXX: g++-9,   python: '3.8',   build-flag: release }
-          - {repo_name: ess-dg/dgcode_projects, os: macos-11,     CC: clang,    CXX: clang++, python: '3.10', build-flag: examine }
+      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix-combinations) }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -36,10 +81,10 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: Checkout ${{ matrix.repo_name }}
+      - name: Checkout dgcode_projects
         uses: actions/checkout@v3
         with:
-          repository: ${{ matrix.repo_name }}
+          repository: ess-dg/dgcode_projects
           path: './${{ env.EXTRA_PKG_DIR }}'
 
       - name: Setup and build framework
@@ -49,11 +94,15 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python }}
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
+          INSTALL_GEANT4: ${{ inputs.without-geant4 != true && (matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12') }} #temp solution until Geant4 update
+          DGCODE_BRANCH: ${{ inputs.dgcode-branch }}
 
       - name: Add user Projects repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
 
       - name: Build user packages
+        id: setup-user-packages
+        if: steps.setup-framework.outcome == 'success'
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
@@ -63,6 +112,8 @@ jobs:
           DGDEP_IGNOREBADSHEBANG: 1
 
       - name: Run tests
+        id: run-tests
+        if: inputs.skip-tests != true && steps.setup-user-packages.outcome == 'success'
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
@@ -71,22 +122,26 @@ jobs:
         env:
           DGDEP_IGNOREBADSHEBANG: 1
 
+      - name: Setup tmate session for manual debugging
+        uses: mxschmitt/action-tmate@v3
+        if: always() && inputs.manual-debugging == true && (steps.setup-framework.outcome != 'success' || steps.setup-user-packages.outcome != 'success' || steps.run-tests.outcome != 'success')
+        with:
+          limit-access-to-actor: true
+
       - name: Rename test result
         id: rename-test-result
-        if: always() && steps.setup-framework.outcome == 'success'
-        run: |
-          repo_name=$(echo ${{ matrix.repo_name }} | tr '/' '-') 
-          mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${repo_name}_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+        if: inputs.skip-tests != true && steps.run-tests.outcome == 'success'
+        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
       - uses: actions/upload-artifact@v3  # upload test results
-        if: always() && steps.rename-test-result.outcome == 'success'
+        if: inputs.skip-tests != true && steps.rename-test-result.outcome == 'success'
         with:
           name: test-results-user-tests
-          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat*.xml
+          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
   report:
     name: Test reporting
-    if: always()
+    if: always() && inputs.skip-tests != true
     needs: user-tests
     runs-on: ubuntu-latest
     steps:
@@ -96,19 +151,12 @@ jobs:
       with:
         name: test-results-user-tests
         path: artifact_dir
-
-    # - name: Publish Test Report
-    #   uses: mikepenz/action-junit-report@v3
-    #   if: always() # run even if the previous step fails
-    #   with:
-    #     check_name: User Tests Report (mikepenz)
-    #     report_paths: artifact_dir/dgtest_results_junitformat*.xml
   
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       if: always()
       with:
-        check_name: User Tests Report (EnricoMi)
+        check_name: User Tests Report
         junit_files: artifact_dir/dgtest_results_junitformat*.xml
         report_individual_runs: "true"
         comment_mode: "off" #control pull request comments

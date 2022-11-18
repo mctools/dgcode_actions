@@ -154,7 +154,6 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix-combinations) }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow-failure == 1 }}
     defaults:
       run:
         shell: bash
@@ -246,7 +245,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       if: always()
       with:
-        check_name: Validation Tests Report (EnricoMi)
+        check_name: Validation Tests Report
         junit_files: artifact_dir/dgtest_results_junitformat*.xml
         report_individual_runs: "true"
         comment_mode: "off" #control pull request comments
