@@ -11,7 +11,7 @@ on:
       pkg-repo:
         type: choice
         description: Package repository
-        options: ['mctools/dgcode_val', 'ess-dg/dgcode_projects']
+        options: ['mctools/dgcode_val', 'ess-dg/dgcode_projects', 'dgcode/dgcode_private_projects']
         default: 'mctools/dgcode_val'
       pkg-repo-branch:
         type: string
@@ -107,6 +107,11 @@ on:
         required: false
         type: string
         default: defaults
+    secrets:
+      PRIVATE_PROJ_REPO_URL:
+        required: false #required for private repositories
+      PRIVATE_PROJ_REPO_PAT:
+        required: false #required for private repositories
 
 jobs:
   setup-matrix:
@@ -204,12 +209,20 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: Checkout packages repo (${{ inputs.pkg-repo }}/${{ inputs.pkg-repo-branch }})
+      - name: Checkout public packages repo (${{ inputs.pkg-repo }}/${{ inputs.pkg-repo-branch }})
+        if: inputs.pkg-repo != 'dgcode/dgcode_private_projects'
         uses: actions/checkout@v3
         with:
           repository: ${{ inputs.pkg-repo }}
           ref: ${{ inputs.pkg-repo-branch }}
           path: './${{ env.EXTRA_PKG_DIR }}'
+
+      - name: Checkout private packages repo (${{ inputs.pkg-repo }}/${{ inputs.pkg-repo-branch }})
+        if: inputs.pkg-repo == 'dgcode/dgcode_private_projects'
+        run: | 
+          git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+          cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+          git checkout ${{ inputs.pkg-repo-branch }}
 
       - name: Setup and build framework (mctools/dgcode/${{ inputs.dgcode-branch }})
         id: setup-framework
