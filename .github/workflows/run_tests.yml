@@ -20,7 +20,7 @@ on:
       setup-choice:
         type: choice
         description: Software setup(s) to use
-        options: ['Defaults', 'All',
+        options: ['defaults', 'all',
           '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7",  "build-flag": "debug"   }', 
           '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6",  "build-flag": "debug"   }',
           '{ "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7",  "build-flag": "debug"   }',
@@ -106,7 +106,7 @@ on:
         description: Software setup(s) to use
         required: false
         type: string
-        default: Defaults
+        default: defaults
 
 jobs:
   setup-matrix:
@@ -161,9 +161,9 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }'
 
-          if [[ '${{ inputs.setup-choice }}' == 'Defaults' || '${{ inputs.setup-choice }}' == '' ]]; then
+          if [[ '${{ inputs.setup-choice }}' == 'defaults' || '${{ inputs.setup-choice }}' == '' ]]; then
             MATRIX=$MATRIX_DEFAULTS 
-          elif [[ '${{ inputs.setup-choice }}' == 'All' ]]; then
+          elif [[ '${{ inputs.setup-choice }}' == 'all' ]]; then
             MATRIX=$MATRIX_ALL
           else
             MATRIX='${{ inputs.setup-choice }}'
