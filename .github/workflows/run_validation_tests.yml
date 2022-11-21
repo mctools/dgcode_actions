@@ -1,4 +1,5 @@
 name: 'run_validation_tests'
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('pkgs{0} {1}, branch{0} {2}; fmwk branch{0} {3}', ':', inputs.pkg-repo, inputs.pkg-repo-branch, inputs.dgcode-branch ) || '' }}
 
 on:
   workflow_dispatch:
@@ -7,10 +8,19 @@ on:
         type: string
         description: Framework branch to use
         default: main
+      pkg-repo:
+        type: choice
+        description: Package repository
+        options: ['mctools/dgcode_val', 'ess-dg/dgcode_projects']
+        default: 'mctools/dgcode_val'
+      pkg-repo-branch:
+        type: string
+        description: Package repository branch
+        default: main
       setup-choice:
         type: choice
         description: Software setup(s) to use
-        options: ['All',
+        options: ['Defaults', 'All',
           '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7",  "build-flag": "debug"   }', 
           '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6",  "build-flag": "debug"   }',
           '{ "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7",  "build-flag": "debug"   }',
@@ -59,10 +69,6 @@ on:
         type: string
         description: Setup filter - exclude if it has ANY of the keywords (comma separated)
         default: ''
-      exclude-filters-all:
-        type: string
-        description: Setup filter - exclude if it has ALL of the keywords (comma separated)
-        default: ''
       manual-debugging:
         type: boolean
         description: Launch manual debugging tmate session on failure
@@ -71,7 +77,7 @@ on:
         type: boolean
         description: Do not install Geant4
         default: false
-      skip-tests:
+      skip-tests: 
         type: boolean
         description: Skip running the tests
         default: false
@@ -81,11 +87,26 @@ on:
 
   workflow_call:
     inputs:
+      pkg-repo:
+        description: Package repository
+        required: false
+        type: string
+        default: 'mctools/dgcode_val'
+      pkg-repo-branch:
+        description: Package repository branch
+        required: false
+        type: string
+        default: main
       dgcode-branch:
         description: Framework branch to use
         required: false
         type: string
         default: main
+      setup-choice:
+        description: Software setup(s) to use
+        required: false
+        type: string
+        default: Defaults
 
 jobs:
   setup-matrix:
@@ -94,7 +115,13 @@ jobs:
       - name: Setup matrix combinations
         id: setup-matrix-combinations
         run: |
-          MATRIX='
+          MATRIX_DEFAULTS='
+          { "os": "ubuntu-20.04", "CC": "gcc-10",   "CXX": "g++-10",     "python": "3.9",  "build-flag": "debug"   },
+          { "os": "ubuntu-20.04", "CC": "gcc-10",   "CXX": "g++-10",     "python": "3.9",  "build-flag": "release" },
+          { "os": "ubuntu-20.04", "CC": "gcc-9",    "CXX": "g++-9",      "python": "3.8",  "build-flag": "debug"   },
+          { "os": "macos-11",     "CC": "clang",    "CXX": "clang++",    "python": "3.9",  "build-flag": "debug"   }'
+
+          MATRIX_ALL='
           { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7",  "build-flag": "debug"   },
           { "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6",  "build-flag": "debug"   },
           { "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7",  "build-flag": "debug"   },
@@ -134,20 +161,27 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }'
 
+          if [[ '${{ inputs.setup-choice }}' == 'Defaults' || '${{ inputs.setup-choice }}' == '' ]]; then
+            MATRIX=$MATRIX_DEFAULTS 
+          elif [[ '${{ inputs.setup-choice }}' == 'All' ]]; then
+            MATRIX=$MATRIX_ALL
+          else
+            MATRIX='${{ inputs.setup-choice }}'
+          fi
+          echo "Matrix to start with: $MATRIX"
+
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '${{ inputs.include-filter-any }}'.split(',')]) ]))")
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and all([f.strip() in l for f in '${{ inputs.include-filter-all }}'.split(',')]) ]))")
           EXCLUDE_FILTER_ANY=$(if [ '${{ inputs.exclude-filters-any }}' != '' ]; then echo '${{ inputs.exclude-filters-any }}' ; else echo 'do not exclude any' ; fi)
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '$EXCLUDE_FILTER_ANY'.split(',')]) ]))")
-          EXCLUDE_FILTER_ALL=$(if [ '${{ inputs.exclude-filters-all }}' != '' ]; then echo '${{ inputs.exclude-filters-all }}' ; else echo 'do not exclude any' ; fi)
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not all([f.strip() in l for f in '$EXCLUDE_FILTER_ALL'.split(',')]) ]))")
 
-          MATRIX=$(if [[ '${{ inputs.setup-choice }}' == 'All' || '${{ inputs.setup-choice }}' == '' ]]; then echo $MATRIX; else echo '${{ inputs.setup-choice }}' ; fi)
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
           echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
+          echo "Final matrix: $MATRIX"
     outputs:
       matrix-combinations: ${{ steps.setup-matrix-combinations.outputs.matrix-combinations }}
 
-  validation-tests:
+  test:
     needs: setup-matrix
     name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
     strategy:
@@ -162,7 +196,7 @@ jobs:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
       PROJECTS_DIR: projects
-      EXTRA_PKG_DIR: dgcode_val
+      EXTRA_PKG_DIR: dgcode_pkgs
 
     steps:
       - name: Checkout dgcode_actions
@@ -170,13 +204,14 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: Checkout dgcode_val
+      - name: Checkout packages repo (${{ inputs.pkg-repo }}/${{ inputs.pkg-repo-branch }})
         uses: actions/checkout@v3
         with:
-          repository: mctools/dgcode_val
+          repository: ${{ inputs.pkg-repo }}
+          ref: ${{ inputs.pkg-repo-branch }}
           path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: Setup and build framework
+      - name: Setup and build framework (mctools/dgcode/${{ inputs.dgcode-branch }})
         id: setup-framework
         uses: ./.github/actions/setup
         with:
@@ -186,11 +221,11 @@ jobs:
           INSTALL_GEANT4: ${{ inputs.without-geant4 != true && (matrix.os !='ubuntu-22.04' && matrix.os != 'macos-12') }} #temp solution until Geant4 update
           DGCODE_BRANCH: ${{ inputs.dgcode-branch }}
 
-      - name: Add Validation repo to the extra pkg path
+      - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
 
-      - name: Build Validation packages
-        id: setup-validation-packages
+      - name: Build packages from ${{ inputs.pkg-repo }} 
+        id: build-extra-packages
         if: steps.setup-framework.outcome == 'success'
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
@@ -202,7 +237,7 @@ jobs:
 
       - name: Run tests
         id: run-tests
-        if: inputs.skip-tests != true && steps.setup-validation-packages.outcome == 'success'
+        if: inputs.skip-tests != true && steps.build-extra-packages.outcome == 'success'
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
@@ -213,7 +248,7 @@ jobs:
 
       - name: Setup tmate session for manual debugging
         uses: mxschmitt/action-tmate@v3
-        if: always() && inputs.manual-debugging == true && (steps.setup-framework.outcome != 'success' || steps.setup-validation-packages.outcome != 'success' || steps.run-tests.outcome != 'success')
+        if: always() && inputs.manual-debugging == true && (steps.setup-framework.outcome != 'success' || steps.build-extra-packages.outcome != 'success' || steps.run-tests.outcome != 'success')
         with:
           limit-access-to-actor: true
 
@@ -225,27 +260,27 @@ jobs:
       - uses: actions/upload-artifact@v3  # upload test results
         if: inputs.skip-tests != true && steps.rename-test-result.outcome == 'success'
         with:
-          name: test-results-validations
+          name: test-results
           path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
   report:
     name: Test reporting
     if: always() && inputs.skip-tests != true
-    needs: validation-tests
+    needs: test
     runs-on: ubuntu-latest
     steps:
 
     - name: Download a single artifact
       uses: actions/download-artifact@v3
       with:
-        name: test-results-validations
+        name: test-results
         path: artifact_dir
 
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       if: always()
       with:
-        check_name: Validation Tests Report
+        check_name: Tests Report
         junit_files: artifact_dir/dgtest_results_junitformat*.xml
         report_individual_runs: "true"
         comment_mode: "off" #control pull request comments
