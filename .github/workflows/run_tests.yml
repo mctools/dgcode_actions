@@ -1,4 +1,4 @@
-name: 'run_validation_tests'
+name: 'run_tests'
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('pkgs{0} {1}, branch{0} {2}; fmwk branch{0} {3}', ':', inputs.pkg-repo, inputs.pkg-repo-branch, inputs.dgcode-branch ) || '' }}
 
 on:
