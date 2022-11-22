@@ -83,7 +83,7 @@ on:
         default: false
 
   schedule:
-    - cron: '30 23 * * 0'  # 23:30 every Sunday
+    - cron: '59 17 * * *' # testing
 
   workflow_call:
     inputs:
@@ -166,10 +166,10 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }'
 
-          if [[ '${{ inputs.setup-choice }}' == 'defaults' || '${{ inputs.setup-choice }}' == '' ]]; then
-            MATRIX=$MATRIX_DEFAULTS 
-          elif [[ '${{ inputs.setup-choice }}' == 'all' ]]; then
+          if [[ '${{ inputs.setup-choice }}' == 'all' || ${{ github.event_name }} == 'schedule' ]]; then
             MATRIX=$MATRIX_ALL
+          elif [[ '${{ inputs.setup-choice }}' == 'defaults' || '${{ inputs.setup-choice }}' == '' ]]; then
+            MATRIX=$MATRIX_DEFAULTS
           else
             MATRIX='${{ inputs.setup-choice }}'
           fi
@@ -204,27 +204,39 @@ jobs:
       EXTRA_PKG_DIR: dgcode_pkgs
 
     steps:
+      - name: Set repository related defaults for schedule events
+        run: |
+          if [[ ${{ github.event_name }} == 'schedule' ]]; then
+            echo "pkg_repo=mctools/dgcode_val" >> $GITHUB_ENV
+            echo "pkg_repo_branch=main" >> $GITHUB_ENV
+            echo "dgcode_branch=main" >> $GITHUB_ENV
+          else
+            echo "pkg_repo=${{ inputs.pkg-repo }}" >> $GITHUB_ENV
+            echo "pkg_repo_branch=${{ inputs.pkg-repo-branch }}" >> $GITHUB_ENV
+            echo "dgcode_branch=${{ inputs.dgcode-branch }}" >> $GITHUB_ENV
+          fi
+
       - name: Checkout dgcode_actions
         uses: actions/checkout@v3
         with:
           repository: mctools/dgcode_actions
 
-      - name: Checkout public packages repo (${{ inputs.pkg-repo }}/${{ inputs.pkg-repo-branch }})
-        if: inputs.pkg-repo != 'dgcode/dgcode_private_projects'
+      - name: Checkout public packages repo (${{ env.pkg_repo }}/${{ env.pkg_repo_branch }})
+        if: env.pkg_repo != 'dgcode/dgcode_private_projects'
         uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.pkg-repo }}
-          ref: ${{ inputs.pkg-repo-branch }}
+          repository: ${{ env.pkg_repo }}
+          ref: ${{ env.pkg_repo_branch }}
           path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: Checkout private packages repo (${{ inputs.pkg-repo }}/${{ inputs.pkg-repo-branch }})
-        if: inputs.pkg-repo == 'dgcode/dgcode_private_projects'
+      - name: Checkout private packages repo (${{ env.pkg_repo }}/${{ env.pkg_repo_branch }})
+        if: env.pkg_repo == 'dgcode/dgcode_private_projects'
         run: | 
           git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
           cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
-          git checkout ${{ inputs.pkg-repo-branch }}
+          git checkout ${{ env.pkg_repo_branch }}
 
-      - name: Setup and build framework (mctools/dgcode/${{ inputs.dgcode-branch }})
+      - name: Setup and build framework (mctools/dgcode/${{ env.dgcode_branch }})
         id: setup-framework
         uses: ./.github/actions/setup
         with:
@@ -232,12 +244,12 @@ jobs:
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
           INSTALL_GEANT4: ${{ inputs.without-geant4 != true && (matrix.os !='ubuntu-22.04') }} #temp solution until Geant4 update
-          DGCODE_BRANCH: ${{ inputs.dgcode-branch }}
+          DGCODE_BRANCH: ${{ env.dgcode_branch }}
 
       - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
 
-      - name: Build packages from ${{ inputs.pkg-repo }} 
+      - name: Build packages from ${{ env.pkg_repo }} 
         id: build-extra-packages
         if: steps.setup-framework.outcome == 'success'
         run: |
