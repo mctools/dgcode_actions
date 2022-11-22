@@ -83,7 +83,7 @@ on:
         default: false
 
   schedule:
-    - cron: '59 17 * * *' # testing
+    - cron: '5 * * * *' # testing
 
   workflow_call:
     inputs:
