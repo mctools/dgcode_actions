@@ -3,6 +3,9 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('pkgs{0} {1}, b
 
 on:
   workflow_dispatch:
+    schedule:
+    - cron: '30 23 * * 0'  # 23:30 every Sunday
+
     inputs:
       dgcode-branch:
         type: string
@@ -81,9 +84,6 @@ on:
         type: boolean
         description: Skip running the tests
         default: false
-
-  schedule:
-    - cron: '5 * * * *' # testing
 
   workflow_call:
     inputs:
