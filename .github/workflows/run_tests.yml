@@ -2,10 +2,10 @@ name: 'run_tests'
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('pkgs{0} {1}, branch{0} {2}; fmwk branch{0} {3}', ':', inputs.pkg-repo, inputs.pkg-repo-branch, inputs.dgcode-branch ) || '' }}
 
 on:
-  workflow_dispatch:
-    schedule:
+  schedule:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
-
+    
+  workflow_dispatch:
     inputs:
       dgcode-branch:
         type: string
