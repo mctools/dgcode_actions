@@ -4,7 +4,7 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('pkgs{0} {1}, b
 on:
   schedule:
     - cron: '30 23 * * 0'  # 23:30 every Sunday
-    
+
   workflow_dispatch:
     inputs:
       dgcode-branch:
@@ -14,7 +14,7 @@ on:
       pkg-repo:
         type: choice
         description: Package repository
-        options: ['mctools/dgcode_val', 'ess-dg/dgcode_projects', 'dgcode/dgcode_private_projects']
+        options: ['mctools/dgcode_val', 'ess-dg/dgcode_projects', 'dgcode/dgcode_private_projects', 'ncrystal/ncrystaldev']
         default: 'mctools/dgcode_val'
       pkg-repo-branch:
         type: string
@@ -221,18 +221,26 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: Checkout public packages repo (${{ env.pkg_repo }}/${{ env.pkg_repo_branch }})
-        if: env.pkg_repo != 'dgcode/dgcode_private_projects'
+      - name: 'Checkout public packages repo: ${{ env.pkg_repo_branch }}'
+        if: (env.pkg_repo != 'dgcode/dgcode_private_projects') && (env.pkg_repo != 'ncrystal/ncrystaldev')
         uses: actions/checkout@v3
         with:
           repository: ${{ env.pkg_repo }}
           ref: ${{ env.pkg_repo_branch }}
           path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: Checkout private packages repo (${{ env.pkg_repo }}/${{ env.pkg_repo_branch }})
+      - name: 'Checkout private packages repo: ${{ env.pkg_repo }}'
         if: env.pkg_repo == 'dgcode/dgcode_private_projects'
-        run: | 
+        run: |
           git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+
+      - name: 'Checkout NCrystaldev repo: ${{ env.pkg_repo }}'
+        if: env.pkg_repo == 'ncrystal/ncrystaldev'
+        run: |
+          git clone https://oauth2:${{ secrets.NCRYSTALDEV_REPO_PAT }}@${{ secrets.NCRYSTALDEV_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+
+      - name: 'Checkout package repo branch: ${{ env.pkg_repo_branch }}'
+        run: |
           cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
           git checkout ${{ env.pkg_repo_branch }}
 
