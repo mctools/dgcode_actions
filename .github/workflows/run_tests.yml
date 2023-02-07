@@ -20,11 +20,12 @@ on:
         type: string
         description: Package repository branch
         default: main
-      setup-choice:
+      platform-choice:
         type: choice
-        description: Software setup(s) to use
+        description: Platforms (software) to use
+        # IMPORTANT: DO NOT FORGET TO CHANGE THE 'MATRIX_DEFAULTS' AND 'MATRIX_ALL' VARIABLES BELOW ALONG WITH ANY PLATFORM CHANGE! #
         options: ['defaults', 'all',
-          '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7",  "build-flag": "debug"   }', 
+          '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.7",  "build-flag": "debug"   }',
           '{ "os": "ubuntu-18.04", "CC": "clang-9",  "CXX": "clang++-9",  "python": "3.6",  "build-flag": "debug"   }',
           '{ "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7",  "build-flag": "debug"   }',
           '{ "os": "ubuntu-18.04", "CC": "gcc-7",    "CXX": "g++-7",      "python": "3.7",  "build-flag": "release" }',
@@ -64,14 +65,22 @@ on:
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }']
       include-filter-any:
         type: string
-        description: Setup filter - include if it has ANY of the keywords (comma separated)
-      include-filter-all:
+        description: Platform filter - include if it has ANY of the keywords (comma separated)
+      # include-filter-all: #commented out because the workflow_dispatch input limit is reached (max 10)
+      #   type: string
+      #   description: Platform filter - include if it has ALL of the keywords (comma separated)
+      exclude-filter-any:
         type: string
-        description: Setup filter - include if it has ALL of the keywords (comma separated)
-      exclude-filters-any:
-        type: string
-        description: Setup filter - exclude if it has ANY of the keywords (comma separated)
+        description: Platform filter - exclude if it has ANY of the keywords (comma separated)
         default: ''
+      test-filter:
+        type: string
+        description: Test filter (dgbuild --testfilter=)
+        default: '*'
+      skip-tests:
+        type: boolean
+        description: Skip running the tests
+        default: false
       manual-debugging:
         type: boolean
         description: Launch manual debugging tmate session on failure
@@ -79,10 +88,6 @@ on:
       without-geant4:
         type: boolean
         description: Do not install Geant4
-        default: false
-      skip-tests: 
-        type: boolean
-        description: Skip running the tests
         default: false
 
   workflow_call:
@@ -102,8 +107,8 @@ on:
         required: false
         type: string
         default: main
-      setup-choice:
-        description: Software setup(s) to use
+      platform-choice:
+        description: Platforms (software) to use
         required: false
         type: string
         default: defaults
@@ -114,11 +119,11 @@ on:
         required: false #required for private repositories
 
 jobs:
-  setup-matrix:
+  create-platform-matrix:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup matrix combinations
-        id: setup-matrix-combinations
+      - name: Create platform (software) matrix
+        id: create-matrix
         run: |
           MATRIX_DEFAULTS='
           { "os": "ubuntu-20.04", "CC": "gcc-10",   "CXX": "g++-10",     "python": "3.9",  "build-flag": "debug"   },
@@ -166,32 +171,36 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }'
 
-          if [[ '${{ inputs.setup-choice }}' == 'all' || ${{ github.event_name }} == 'schedule' ]]; then
+          if [[ '${{ inputs.platform-choice }}' == 'all' || ${{ github.event_name }} == 'schedule' ]]; then
             MATRIX=$MATRIX_ALL
-          elif [[ '${{ inputs.setup-choice }}' == 'defaults' || '${{ inputs.setup-choice }}' == '' ]]; then
+          elif [[ '${{ inputs.platform-choice }}' == 'defaults' || '${{ inputs.platform-choice }}' == '' ]]; then
             MATRIX=$MATRIX_DEFAULTS
           else
-            MATRIX='${{ inputs.setup-choice }}'
+            MATRIX='${{ inputs.platform-choice }}'
           fi
           echo "Matrix to start with: $MATRIX"
 
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '${{ inputs.include-filter-any }}'.split(',')]) ]))")
-          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and all([f.strip() in l for f in '${{ inputs.include-filter-all }}'.split(',')]) ]))")
-          EXCLUDE_FILTER_ANY=$(if [ '${{ inputs.exclude-filters-any }}' != '' ]; then echo '${{ inputs.exclude-filters-any }}' ; else echo 'do not exclude any' ; fi)
+          MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and any([f.strip() in l for f in '$INCLUDE_FILTER_ANY'.split(',')]) ]))")
+          # MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and all([f.strip() in l for f in '$INCLUDE_FILTER_ALL'.split(',')]) ]))") #commented out because the workflow_dispatch input limit is reached (max 10)
+          EXCLUDE_FILTER_ANY=$(if [ "$EXCLUDE_FILTER_ANY" != '' ]; then echo "$EXCLUDE_FILTER_ANY" ; else echo 'do not exclude any' ; fi)
           MATRIX=$(python -c "print('\n'.join([l for l in '''$MATRIX'''.split('\n') if l and not any([f.strip() in l for f in '$EXCLUDE_FILTER_ANY'.split(',')]) ]))")
 
           MATRIX=$(echo $MATRIX | tr '\n' ' ')
-          echo "matrix-combinations={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
+          echo "platform-matrix={\"include\":[$MATRIX]}" >> $GITHUB_OUTPUT
           echo "Final matrix: $MATRIX"
+        env: 
+          INCLUDE_FILTER_ANY: ${{ inputs.include-filter-any }}
+          EXCLUDE_FILTER_ANY: ${{ inputs.exclude-filter-any }}
+          #INCLUDE_FILTER_ALL: inputs.include-filter-all
     outputs:
-      matrix-combinations: ${{ steps.setup-matrix-combinations.outputs.matrix-combinations }}
+      platform-matrix: ${{ steps.create-matrix.outputs.platform-matrix }}
 
   test:
-    needs: setup-matrix
+    needs: create-platform-matrix
     name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix-combinations) }}
+      matrix: ${{ fromJson(needs.create-platform-matrix.outputs.platform-matrix) }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -274,10 +283,11 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild -at --testexcerpts=100
+          dgbuild -at --testexcerpts=100 --testfilter "$TEST_FILTER"
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
+          TEST_FILTER: ${{ inputs.test-filter }}
 
       - name: Setup tmate session for manual debugging
         uses: mxschmitt/action-tmate@v3
