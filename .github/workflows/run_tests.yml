@@ -199,6 +199,7 @@ jobs:
       CXX: ${{ matrix.CXX }}
       PROJECTS_DIR: projects
       EXTRA_PKG_DIR: dgcode_pkgs
+      PIP_PKGS: none
 
     steps:
       - name: Set repository related defaults for schedule events
@@ -211,6 +212,12 @@ jobs:
             echo "pkg_repo=${{ inputs.pkg-repo }}" >> $GITHUB_ENV
             echo "pkg_repo_branch=${{ inputs.pkg-repo-branch }}" >> $GITHUB_ENV
             echo "dgcode_branch=${{ inputs.dgcode-branch }}" >> $GITHUB_ENV
+          fi
+
+      - name: Set pip packages to install based on packages repo
+        run: |
+          if [[ ${{ env.pkg_repo }} == 'ncrystal/ncrystaldev' ]]; then
+            echo "PIP_PKGS='spglib gemmi ase pymatgen'" >> $GITHUB_ENV
           fi
 
       - name: Checkout dgcode_actions
@@ -250,6 +257,7 @@ jobs:
           DGBUILD_FLAG: ${{ matrix.build-flag }}
           INSTALL_GEANT4: ${{ inputs.without-geant4 != true && (matrix.os !='ubuntu-22.04') }} #temp solution until Geant4 update
           DGCODE_BRANCH: ${{ env.dgcode_branch }}
+          PIP_PKGS: ${{ env.PIP_PKGS }}
 
       - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
