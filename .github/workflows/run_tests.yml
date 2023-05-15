@@ -262,6 +262,20 @@ jobs:
       - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
 
+      - name: Version report
+        id: vesion-report
+        if: steps.setup-framework.outcome == 'success'
+        run: |
+          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          . bootstrap.sh
+          echo "Projects repo (${{env.pkg_repo}}/${{ env.pkg_repo_branch }}) commit: "$( cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}; git rev-parse --short HEAD )
+          echo "Framework repo (mctools/dgcode/${{ env.dgcode_branch }}) commit: "$( cd $GITHUB_WORKSPACE/dgcode_framework; git rev-parse --short HEAD )
+          echo "Actions repo (mctools/dgcode_actions/$GITHUB_REF_NAME) commit: "$( cd $GITHUB_WORKSPACE; git rev-parse --short HEAD )
+          echo "pip list: "$(python3 -mpip list)
+        working-directory: ${{ env.PROJECTS_DIR }}
+        env:
+          DGDEP_IGNOREBADSHEBANG: 1
+
       - name: Build packages from ${{ env.pkg_repo }} 
         id: build-extra-packages
         if: steps.setup-framework.outcome == 'success'
