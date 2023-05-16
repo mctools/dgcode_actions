@@ -67,10 +67,10 @@ on:
         type: string
         description: Platform filter - exclude if it has ANY of the keywords (comma separated)
         default: ''
-      test-filter:
+      dgbuild-options:
         type: string
-        description: Test filter (dgbuild --testfilter=)
-        default: '*'
+        description: dgbuild options (e.g. --testfilter=... ONLY=... )
+        default: '--testexcerpts=100 -a'
       skip-tests:
         type: boolean
         description: Skip running the tests
@@ -282,10 +282,11 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild -a --${{ matrix.build-flag }}
+          dgbuild --${{ matrix.build-flag }} $DGBUILD_OPTIONS
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
+          DGBUILD_OPTIONS: ${{ inputs.dgbuild-options }}
 
       - name: Run tests
         id: run-tests
@@ -293,11 +294,11 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild -at --testexcerpts=100 --testfilter "$TEST_FILTER"
+          dgbuild -t --${{ matrix.build-flag }} $DGBUILD_OPTIONS
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
-          TEST_FILTER: ${{ inputs.test-filter }}
+          DGBUILD_OPTIONS: ${{ inputs.dgbuild-options }}
 
       - name: Setup tmate session for manual debugging
         uses: mxschmitt/action-tmate@v3
