@@ -41,14 +41,14 @@ on:
           '{ "os": "ubuntu-20.04", "CC": "clang-10", "CXX": "clang++-10", "python": "3.9",  "build-flag": "release" }',
           '{ "os": "ubuntu-20.04", "CC": "clang-10", "CXX": "clang++-10", "python": "3.8",  "build-flag": "debug"   }',
           '{ "os": "ubuntu-20.04", "CC": "clang-10", "CXX": "clang++-10", "python": "3.8",  "build-flag": "release" }',
-          '{ "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.10", "build-flag": "debug"   }',
-          '{ "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.10", "build-flag": "release" }',
+          '{ "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.11", "build-flag": "debug"   }',
+          '{ "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.11", "build-flag": "release" }',
           '{ "os": "ubuntu-22.04", "CC": "clang-14", "CXX": "clang++-14", "python": "3.10", "build-flag": "debug"   }',
           '{ "os": "ubuntu-22.04", "CC": "clang-14", "CXX": "clang++-14", "python": "3.10", "build-flag": "release" }',
           '{ "os": "ubuntu-22.04", "CC": "gcc-9",   "CXX": "g++-9",       "python": "3.10", "build-flag": "debug"   }',
           '{ "os": "ubuntu-22.04", "CC": "gcc-9",   "CXX": "g++-9",       "python": "3.10", "build-flag": "release" }',
-          '{ "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "debug"   }',
-          '{ "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "release" }',
+          '{ "os": "ubuntu-22.04", "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.10", "build-flag": "debug"   }',
+          '{ "os": "ubuntu-22.04", "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.10", "build-flag": "release" }',
           '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   }',
           '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" }',
           '{ "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   }',
@@ -56,7 +56,12 @@ on:
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   }',
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" }',
           '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   }',
-          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }']
+          '{ "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }',
+          '{ "os": "macos-12",     "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.11", "build-flag": "debug"   }',
+          '{ "os": "macos-12",     "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.11", "build-flag": "release" }',
+          '{ "os": "macos-13",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   }',
+          '{ "os": "macos-13",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }']
+
       include-filter-any:
         type: string
         description: Platform filter - include if it has ANY of the keywords (comma separated)
@@ -142,14 +147,14 @@ jobs:
           { "os": "ubuntu-20.04", "CC": "clang-10", "CXX": "clang++-10", "python": "3.9",  "build-flag": "release" },
           { "os": "ubuntu-20.04", "CC": "clang-10", "CXX": "clang++-10", "python": "3.8",  "build-flag": "debug"   },
           { "os": "ubuntu-20.04", "CC": "clang-10", "CXX": "clang++-10", "python": "3.8",  "build-flag": "release" },
-          { "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.10", "build-flag": "debug"   },
-          { "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.10", "build-flag": "release" },
+          { "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.11", "build-flag": "debug"   },
+          { "os": "ubuntu-22.04", "CC": "clang-12", "CXX": "clang++-12", "python": "3.11", "build-flag": "release" },
           { "os": "ubuntu-22.04", "CC": "clang-14", "CXX": "clang++-14", "python": "3.10", "build-flag": "debug"   },
           { "os": "ubuntu-22.04", "CC": "clang-14", "CXX": "clang++-14", "python": "3.10", "build-flag": "release" },
           { "os": "ubuntu-22.04", "CC": "gcc-9",   "CXX": "g++-9",       "python": "3.10", "build-flag": "debug"   },
           { "os": "ubuntu-22.04", "CC": "gcc-9",   "CXX": "g++-9",       "python": "3.10", "build-flag": "release" },
-          { "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "debug"   },
-          { "os": "ubuntu-22.04", "CC": "gcc-11",  "CXX": "g++-11",      "python": "3.10", "build-flag": "release" },
+          { "os": "ubuntu-22.04", "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.10", "build-flag": "debug"   },
+          { "os": "ubuntu-22.04", "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.10", "build-flag": "release" },
           { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   },
           { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" },
           { "os": "macos-11",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   },
@@ -157,7 +162,11 @@ jobs:
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "debug"   },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.9",  "build-flag": "release" },
           { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "debug"   },
-          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" }'
+          { "os": "macos-12",     "CC": "clang",   "CXX": "clang++",     "python": "3.11", "build-flag": "release" },
+          { "os": "macos-12",     "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.11", "build-flag": "debug"   },
+          { "os": "macos-12",     "CC": "gcc-12",  "CXX": "g++-12",      "python": "3.11", "build-flag": "release" },
+          { "os": "macos-13",     "CC": "clang",   "CXX": "clang",       "python": "3.11", "build-flag": "debug"   },
+          { "os": "macos-13",     "CC": "clang",   "CXX": "clang",       "python": "3.11", "build-flag": "release" }'
 
           if [[ '${{ inputs.platform-choice }}' == 'all' || ${{ github.event_name }} == 'schedule' ]]; then
             MATRIX=$MATRIX_ALL
