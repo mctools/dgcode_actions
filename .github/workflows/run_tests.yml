@@ -116,6 +116,8 @@ on:
         required: false #required for private repositories
       PRIVATE_PROJ_REPO_PAT:
         required: false #required for private repositories
+      DMSC_GITLAB_CERT:
+        required: false
 
 jobs:
   create-platform-matrix:
@@ -245,12 +247,24 @@ jobs:
       - name: 'Checkout private packages repo: ${{ env.pkg_repo }}'
         if: env.pkg_repo == 'dgcode/dgcode_private_projects'
         run: |
+          if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
+            echo "$DMSC_GITLAB_CERT" > root_cert.pem
+            export GIT_SSL_CAINFO=root_cert.pem
+          fi
           git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+        env:
+          DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
 
       - name: 'Checkout NCrystaldev repo: ${{ env.pkg_repo }}'
         if: env.pkg_repo == 'ncrystal/ncrystaldev'
         run: |
+          if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
+            echo "$DMSC_GITLAB_CERT" > root_cert.pem
+            export GIT_SSL_CAINFO=root_cert.pem
+          fi
           git clone https://oauth2:${{ secrets.NCRYSTALDEV_REPO_PAT }}@${{ secrets.NCRYSTALDEV_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+        env:
+          DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
 
       - name: 'Checkout package repo branch: ${{ env.pkg_repo_branch }}'
         run: |
