@@ -24,6 +24,7 @@ on:
         type: choice
         description: Platforms (software) to use
         # IMPORTANT: DO NOT FORGET TO CHANGE THE 'MATRIX_DEFAULTS' AND 'MATRIX_ALL' VARIABLES BELOW ALONG WITH ANY PLATFORM CHANGE! #
+        default: 'defaults'
         options: ['defaults', 'all',
           '{ "os": "ubuntu-20.04", "CC": "gcc-10",   "CXX": "g++-10",     "python": "3.9",  "build-flag": "debug"   }',
           '{ "os": "ubuntu-20.04", "CC": "gcc-10",   "CXX": "g++-10",     "python": "3.9",  "build-flag": "release" }',
@@ -170,9 +171,9 @@ jobs:
           { "os": "macos-13",     "CC": "clang",   "CXX": "clang",       "python": "3.11", "build-flag": "debug"   },
           { "os": "macos-13",     "CC": "clang",   "CXX": "clang",       "python": "3.11", "build-flag": "release" }'
 
-          if [[ '${{ inputs.platform-choice }}' == 'all' || ${{ github.event_name }} == 'schedule' ]]; then
+          if [[ '${{ inputs.platform-choice }}' == 'all' || '${{ inputs.platform-choice }}' == '' ]]; then
             MATRIX=$MATRIX_ALL
-          elif [[ '${{ inputs.platform-choice }}' == 'defaults' || '${{ inputs.platform-choice }}' == '' ]]; then
+          elif [[ '${{ inputs.platform-choice }}' == 'defaults' ]]; then
             MATRIX=$MATRIX_DEFAULTS
           else
             MATRIX='${{ inputs.platform-choice }}'
@@ -213,21 +214,21 @@ jobs:
       PIP_PKGS: none
 
     steps:
-      - name: Set repository related defaults for schedule events
+      - name: Set env vars (with defaults for schedule events with no inputs)
         run: |
-          if [[ ${{ github.event_name }} == 'schedule' ]]; then
-            echo "pkg_repo=mctools/dgcode_val" >> $GITHUB_ENV
-            echo "pkg_repo_branch=main" >> $GITHUB_ENV
-            echo "dgcode_branch=main" >> $GITHUB_ENV
-          else
-            echo "pkg_repo=${{ inputs.pkg-repo }}" >> $GITHUB_ENV
-            echo "pkg_repo_branch=${{ inputs.pkg-repo-branch }}" >> $GITHUB_ENV
-            echo "dgcode_branch=${{ inputs.dgcode-branch }}" >> $GITHUB_ENV
-          fi
+          echo "PKG_REPO=$PKG_REPO" >> $GITHUB_ENV
+          echo "PKG_REPO_BRANCH=$PKG_REPO_BRANCH" >> $GITHUB_ENV
+          echo "DGCODE_BRANCH=$DGCODE_BRANCH" >> $GITHUB_ENV
+          echo "DGBUILD_OPTIONS=$DGBUILD_OPTIONS" >> $GITHUB_ENV
+        env:
+          PKG_REPO: ${{ inputs.pkg-repo || 'mctools/dgcode_val' }}
+          PKG_REPO_BRANCH: ${{ inputs.pkg-repo-branch || 'main' }}
+          DGCODE_BRANCH: ${{ inputs.dgcode-branch || 'main' }}
+          DGBUILD_OPTIONS: ${{ inputs.dgbuild-options || '--testexcerpts=100 -a' }}
 
       - name: Set pip packages to install based on packages repo
         run: |
-          if [[ ${{ env.pkg_repo }} == 'ncrystal/ncrystaldev' ]]; then
+          if [[ ${{ env.PKG_REPO }} == 'ncrystal/ncrystaldev' ]]; then
             echo "PIP_PKGS='spglib gemmi ase pymatgen'" >> $GITHUB_ENV
           fi
 
@@ -236,16 +237,16 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: 'Checkout public packages repo: ${{ env.pkg_repo_branch }}'
-        if: (env.pkg_repo != 'dgcode/dgcode_private_projects') && (env.pkg_repo != 'ncrystal/ncrystaldev')
+      - name: 'Checkout public packages repo: ${{ env.PKG_REPO_BRANCH }}'
+        if: (env.PKG_REPO != 'dgcode/dgcode_private_projects') && (env.PKG_REPO != 'ncrystal/ncrystaldev')
         uses: actions/checkout@v3
         with:
-          repository: ${{ env.pkg_repo }}
-          ref: ${{ env.pkg_repo_branch }}
+          repository: ${{ env.PKG_REPO }}
+          ref: ${{ env.PKG_REPO_BRANCH }}
           path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: 'Checkout private packages repo: ${{ env.pkg_repo }}'
-        if: env.pkg_repo == 'dgcode/dgcode_private_projects'
+      - name: 'Checkout private packages repo: ${{ env.PKG_REPO }}'
+        if: env.PKG_REPO == 'dgcode/dgcode_private_projects'
         run: |
           if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
             echo "$DMSC_GITLAB_CERT" > root_cert.pem
@@ -255,8 +256,8 @@ jobs:
         env:
           DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
 
-      - name: 'Checkout NCrystaldev repo: ${{ env.pkg_repo }}'
-        if: env.pkg_repo == 'ncrystal/ncrystaldev'
+      - name: 'Checkout NCrystaldev repo: ${{ env.PKG_REPO }}'
+        if: env.PKG_REPO == 'ncrystal/ncrystaldev'
         run: |
           if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
             echo "$DMSC_GITLAB_CERT" > root_cert.pem
@@ -266,12 +267,12 @@ jobs:
         env:
           DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
 
-      - name: 'Checkout package repo branch: ${{ env.pkg_repo_branch }}'
+      - name: 'Checkout package repo branch: ${{ env.PKG_REPO_BRANCH }}'
         run: |
           cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
-          git checkout ${{ env.pkg_repo_branch }}
+          git checkout ${{ env.PKG_REPO_BRANCH }}
 
-      - name: Setup and build framework (mctools/dgcode/${{ env.dgcode_branch }})
+      - name: Setup and build framework (mctools/dgcode/${{ env.DGCODE_BRANCH }})
         id: setup-framework
         uses: ./.github/actions/setup
         with:
@@ -279,7 +280,7 @@ jobs:
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
           INSTALL_GEANT4: ${{ inputs.without-geant4 != true && (matrix.os !='ubuntu-22.04') }} #temp solution until Geant4 update
-          DGCODE_BRANCH: ${{ env.dgcode_branch }}
+          DGCODE_BRANCH: ${{ env.DGCODE_BRANCH }}
           PIP_PKGS: ${{ env.PIP_PKGS }}
 
       - name: Add package repo to the extra pkg path
@@ -291,15 +292,15 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          echo "Projects repo (${{env.pkg_repo}}/${{ env.pkg_repo_branch }}) commit: "$( cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}; git rev-parse --short HEAD )
-          echo "Framework repo (mctools/dgcode/${{ env.dgcode_branch }}) commit: "$( cd $GITHUB_WORKSPACE/dgcode_framework; git rev-parse --short HEAD )
+          echo "Projects repo (${{env.PKG_REPO}}/${{ env.PKG_REPO_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}; git rev-parse --short HEAD )
+          echo "Framework repo (mctools/dgcode/${{ env.DGCODE_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/dgcode_framework; git rev-parse --short HEAD )
           echo "Actions repo (mctools/dgcode_actions/$GITHUB_REF_NAME) commit: "$( cd $GITHUB_WORKSPACE; git rev-parse --short HEAD )
           echo "pip list: "$(python3 -mpip list)
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
 
-      - name: Build packages from ${{ env.pkg_repo }} 
+      - name: Build packages from ${{ env.PKG_REPO }} 
         id: build-extra-packages
         if: steps.setup-framework.outcome == 'success'
         run: |
@@ -309,7 +310,6 @@ jobs:
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
-          DGBUILD_OPTIONS: ${{ inputs.dgbuild-options }}
 
       - name: Run tests
         id: run-tests
@@ -321,7 +321,6 @@ jobs:
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
-          DGBUILD_OPTIONS: ${{ inputs.dgbuild-options }}
 
       - name: Setup tmate session for manual debugging
         uses: mxschmitt/action-tmate@v3
