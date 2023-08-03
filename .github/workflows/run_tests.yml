@@ -302,7 +302,7 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild --${{ matrix.build-flag }} $DGBUILD_OPTIONS
+          dgbuild --${{ matrix.build-flag }} "$DGBUILD_OPTIONS"
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
@@ -313,7 +313,7 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild -t --${{ matrix.build-flag }} $DGBUILD_OPTIONS
+          dgbuild -t --${{ matrix.build-flag }} "$DGBUILD_OPTIONS"
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
