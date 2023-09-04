@@ -275,7 +275,7 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python }}
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
-          INSTALL_GEANT4: ${{ inputs.without-geant4 != true && (matrix.os !='ubuntu-22.04') }} #temp solution until Geant4 update
+          INSTALL_GEANT4: ${{ inputs.without-geant4 != true }}
           DGCODE_BRANCH: ${{ env.DGCODE_BRANCH }}
           PIP_PKGS: ${{ env.PIP_PKGS }}
 
