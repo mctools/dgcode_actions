@@ -1,9 +1,16 @@
 #!/bin/bash
 
+set -e
+set -u
+set -o pipefail
+
 DATA_DIR="$1"
 BASE_URL="https://cern.ch/geant4-data/datasets/"
+TAR_FILE_DIR="Geant4data_tar_files"
 
-declare -a arrName=("G4NDL.4.6"
+
+declare -a arrName=("G4PhotonEvaporation.5.7"
+                    "G4NDL.4.6"
                     "G4EMLOW.8.0"
                     "G4RadioactiveDecay.5.6"
                     "G4PII.1.3"
@@ -13,10 +20,10 @@ declare -a arrName=("G4NDL.4.6"
                     "G4ENSDFSTATE.2.3"
                     "G4INCL.1.0"
                     "G4PARTICLEXS.4.0"
-                    "G4SAIDDATA.2.0"
                     )
 
-declare -a unTarName=("G4NDL4.6"
+declare -a unTarName=("PhotonEvaporation5.7"
+                      "G4NDL4.6"
                       "G4EMLOW8.0"
                       "RadioactiveDecay5.6"
                       "G4PII1.3"
@@ -26,10 +33,7 @@ declare -a unTarName=("G4NDL4.6"
                       "G4ENSDFSTATE2.3"
                       "G4INCL1.0"
                       "G4PARTICLEXS4.0"
-                      "G4SAIDDATA2.0"
                       )
-
-TAR_FILE_DIR="Geant4data_tar_files"
 
 if [[ ! -e "$GITHUB_WORKSPACE/$TAR_FILE_DIR" ]]; then
    mkdir "$GITHUB_WORKSPACE/$TAR_FILE_DIR"
