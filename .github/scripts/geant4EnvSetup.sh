@@ -14,4 +14,4 @@ echo "G4ABLADATA=`cd $GITHUB_WORKSPACE/$DATA_DIR/G4ABLA3.1 > /dev/null ; pwd`" >
 echo "G4LEVELGAMMADATA=`cd $GITHUB_WORKSPACE/$DATA_DIR/PhotonEvaporation5.7 > /dev/null ; pwd`" >> $GITHUB_ENV
 echo "G4RADIOACTIVEDATA=`cd $GITHUB_WORKSPACE/$DATA_DIR/RadioactiveDecay5.6 > /dev/null ; pwd`" >> $GITHUB_ENV
 
-echo "$GITHUB_WORKSPACE/geant4-11.0.3/bin" >> $GITHUB_PATH
+echo "$GITHUB_WORKSPACE/geant4-x.y.z/bin" >> $GITHUB_PATH
