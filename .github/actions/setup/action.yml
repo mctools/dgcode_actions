@@ -49,7 +49,7 @@ runs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: dgcodeenviron
-        environment-file: $GITHUB_WORKSPACE/.github/scripts/conda-setup.yml
+        environment-file: .github/scripts/conda-setup.yml
         python-version: ${{ inputs.PYTHON_VERSION }}
         # auto-activate-base: false
     
