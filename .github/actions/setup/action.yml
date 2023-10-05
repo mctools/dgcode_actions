@@ -103,6 +103,10 @@ runs:
     #     python3 -mpip install spglib gemmi ase pymatgen
     #   shell: bash
 
+    - name: Pip install ptpython 
+      run: python3 -mpip install ptpython==3.0.23
+      shell: bash
+
     - name: Build framework
       if: inputs.DO_DGBUILD == 'true'
       run: |
