@@ -207,7 +207,7 @@ jobs:
       CXX: ${{ matrix.CXX }}
       PROJECTS_DIR: projects
       EXTRA_PKG_DIR: dgcode_pkgs
-      PIP_PKGS: none
+      # PIP_PKGS: none
 
     steps:
       - name: Set env vars (with defaults for schedule events with no inputs)
@@ -222,11 +222,11 @@ jobs:
           DGCODE_BRANCH: ${{ inputs.dgcode-branch || 'main' }}
           DGBUILD_OPTIONS: ${{ inputs.dgbuild-options || '--testexcerpts=100 -a' }}
 
-      - name: Set pip packages to install based on packages repo
-        run: |
-          if [[ ${{ env.PKG_REPO }} == 'ncrystal/ncrystaldev' ]]; then
-            echo "PIP_PKGS='spglib gemmi ase pymatgen'" >> $GITHUB_ENV
-          fi
+      # - name: Set pip packages to install based on packages repo
+      #   run: |
+      #     if [[ ${{ env.PKG_REPO }} == 'ncrystal/ncrystaldev' ]]; then
+      #       echo "PIP_PKGS='spglib gemmi ase pymatgen'" >> $GITHUB_ENV
+      #     fi
 
       - name: Checkout dgcode_actions
         uses: actions/checkout@v3
@@ -277,7 +277,7 @@ jobs:
           DGBUILD_FLAG: ${{ matrix.build-flag }}
           INSTALL_GEANT4: ${{ inputs.without-geant4 != true }}
           DGCODE_BRANCH: ${{ env.DGCODE_BRANCH }}
-          PIP_PKGS: ${{ env.PIP_PKGS }}
+          # PIP_PKGS: ${{ env.PIP_PKGS }}
 
       - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
@@ -286,7 +286,7 @@ jobs:
         id: vesion-report
         if: steps.setup-framework.outcome == 'success'
         run: |
-          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
           echo "Projects repo (${{env.PKG_REPO}}/${{ env.PKG_REPO_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}; git rev-parse --short HEAD )
           echo "Framework repo (mctools/dgcode/${{ env.DGCODE_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/dgcode_framework; git rev-parse --short HEAD )
@@ -300,7 +300,7 @@ jobs:
         id: build-extra-packages
         if: steps.setup-framework.outcome == 'success'
         run: |
-          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
           dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS[@]}"
         working-directory: ${{ env.PROJECTS_DIR }}
@@ -311,7 +311,7 @@ jobs:
         id: run-tests
         if: inputs.skip-tests != true && steps.build-extra-packages.outcome == 'success'
         run: |
-          . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+          # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
           dgbuild -t --${{ matrix.build-flag }} "${DGBUILD_OPTIONS[@]}"
         working-directory: ${{ env.PROJECTS_DIR }}

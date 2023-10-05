@@ -1,0 +1,35 @@
+name: dgcodeenviron
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - python
+  - compilers
+  - cmake
+  - bash
+  - boost >= 1.78
+  - git
+  - ncrystal
+  - numpy
+  - matplotlib
+  - zlib
+  - geant4
+  - expat
+  - openscenegraph
+  - ase
+  - pymatgen
+  - matplotlib
+  - gemmi
+  - spglib
+  - scipy
+  - pandas
+  - hdf5
+  - pip
+#untested for now but seems like a good idea:
+#     - gdb (unclear if this will work on osx in practice)
+#     - valgrind (only enable on linux)
+#     - ptpython (via pip)
+variables:
+  DGCODE_BOOTSTRAP_SKIP_DGDEPFIXER_CHECK: 1
+  DGCODE_USECONDABOOSTPYTHON: ALWAYS
+  DGCODE_USESYSNCRYSTAL: ALWAYS
