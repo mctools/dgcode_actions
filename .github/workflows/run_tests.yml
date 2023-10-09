@@ -315,7 +315,9 @@ jobs:
           . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
           IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
-          dgbuild -t --${{ matrix.build-flag }} "${DGBUILD_OPTIONS_ARRAY[@]}"
+          echo ${DGBUILD_OPTIONS_ARRAY[@]}
+          echo "${DGBUILD_OPTIONS_ARRAY[@]}"
+          dgbuild -t --${{ matrix.build-flag }} ${DGBUILD_OPTIONS_ARRAY[@]}
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
