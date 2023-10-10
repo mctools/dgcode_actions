@@ -18,7 +18,6 @@ dependencies:
   - openscenegraph
   - ase
   - pymatgen
-  - matplotlib
   - gemmi
   - spglib
   - scipy

@@ -108,6 +108,15 @@ runs:
         python3 -V
       shell: bash
 
+    - name: Conda list after activate
+      run: |
+        conda activate dgcodeenviron
+        conda info
+        conda list
+        python -V
+        python3 -V
+      shell: bash
+
     # - name: Get OS version for caches
     #   id: os-version
     #   uses: sersoft-gmbh/os-version-action@v2
@@ -158,6 +167,7 @@ runs:
       if: inputs.DO_DGBUILD == 'true'
       run: |
         # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+        conda activate dgcodeenviron
         . bootstrap.sh
         # python3 -c "import matplotlib.pyplot"
         dgbuild -a --${{ inputs.DGBUILD_FLAG }}
