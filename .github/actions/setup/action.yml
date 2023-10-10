@@ -110,7 +110,7 @@ runs:
 
     - name: Conda list after activate
       run: |
-        conda activate dgcodeenviron
+        mamba activate dgcodeenviron
         conda info
         conda list
         python -V
@@ -167,7 +167,7 @@ runs:
       if: inputs.DO_DGBUILD == 'true'
       run: |
         # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-        conda activate dgcodeenviron
+        mamba activate dgcodeenviron
         . bootstrap.sh
         # python3 -c "import matplotlib.pyplot"
         dgbuild -a --${{ inputs.DGBUILD_FLAG }}
