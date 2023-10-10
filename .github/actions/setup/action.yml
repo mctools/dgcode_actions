@@ -76,8 +76,7 @@ runs:
     - name: Update environment
       if: steps.cache.outputs.cache-hit != 'true'
       run:
-        mamba env update -n dgcodeenviron -f
-        .github/scripts/conda-setup.yml
+        mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
       shell: bash
 
     # - name: Cache conda
@@ -100,6 +99,10 @@ runs:
     #     use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     #     # auto-activate-base: false
     
+    - name: Conda init (should not be needed)
+      run: conda init
+      shell: bash
+
     - name: Conda list
       run: |
         conda info
@@ -110,7 +113,7 @@ runs:
 
     - name: Conda list after activate
       run: |
-        mamba activate dgcodeenviron
+        conda activate dgcodeenviron
         conda info
         conda list
         python -V
@@ -167,7 +170,7 @@ runs:
       if: inputs.DO_DGBUILD == 'true'
       run: |
         # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-        mamba activate dgcodeenviron
+        conda activate dgcodeenviron
         . bootstrap.sh
         # python3 -c "import matplotlib.pyplot"
         dgbuild -a --${{ inputs.DGBUILD_FLAG }}
