@@ -45,13 +45,60 @@ runs:
     #   with:
     #     python-version: ${{ inputs.PYTHON_VERSION }}
 
-    - name: Setup conda environment
+    - name: Setup Mambaforge
       uses: conda-incubator/setup-miniconda@v2
       with:
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
         activate-environment: dgcodeenviron
-        environment-file: .github/scripts/conda-setup.yml
+        use-mamba: true
         python-version: ${{ inputs.PYTHON_VERSION }}
-        # auto-activate-base: false
+
+    - name: Get Date
+      id: get-date
+      run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache Conda env
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.CONDA }}/envs
+        key:
+          conda-${{ runner.os }}--${{ runner.arch }}--${{ 
+          inputs.PYTHON_VERSION }}--${{env.CC}}--${{
+          steps.get-date.outputs.today }}-${{
+          hashFiles('.github/scripts/conda-setup.yml') }}-${{ env.CACHE_NUMBER}}
+      env:
+        # Increase this value to reset cache if etc/example-environment.yml has not changed
+        CACHE_NUMBER: 0
+
+    - name: Update environment
+      if: steps.cache.outputs.cache-hit != 'true'
+      run:
+        mamba env update -n dgcodeenviron -f
+        .github/scripts/conda-setup.yml
+      shell: bash
+
+    # - name: Cache conda
+    #   uses: actions/cache@v2
+    #   env:
+    #     # Increase this value to reset cache if etc/example-environment.yml has not changed
+    #     CACHE_NUMBER: 0
+    #   with:
+    #     path: ~/conda_pkgs_dir
+    #     key:
+    #       ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{env.CC}}-${{steps.python-version.outputs.version}}-conda-${{ env.CACHE_NUMBER }}-${{
+    #       hashFiles('etc/example-environment.yml') }}
+
+    # - name: Setup conda environment
+    #   uses: conda-incubator/setup-miniconda@v2
+    #   with:
+    #     activate-environment: dgcodeenviron
+    #     environment-file: .github/scripts/conda-setup.yml
+    #     python-version: ${{ inputs.PYTHON_VERSION }}
+    #     use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    #     # auto-activate-base: false
     
     - name: Conda list
       run: |
@@ -61,14 +108,14 @@ runs:
         python3 -V
       shell: bash
 
-    - name: Get OS version for caches
-      id: os-version
-      uses: sersoft-gmbh/os-version-action@v2
+    # - name: Get OS version for caches
+    #   id: os-version
+    #   uses: sersoft-gmbh/os-version-action@v2
 
-    - name: Get Python version for caches
-      id: python-version
-      run: echo "version=$(python3 -V | sed -e 's/ /-/g')" >> $GITHUB_OUTPUT
-      shell: bash
+    # - name: Get Python version for caches
+    #   id: python-version
+    #   run: echo "version=$(python3 -V | sed -e 's/ /-/g')" >> $GITHUB_OUTPUT
+    #   shell: bash
 
     # - name: Install basic Prerequisites
     #   run: . $GITHUB_WORKSPACE/.github/scripts/instalPrerequisites.sh ${{ runner.os }}
@@ -112,7 +159,7 @@ runs:
       run: |
         # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
         . bootstrap.sh
-        python3 -c "import matplotlib.pyplot"
+        # python3 -c "import matplotlib.pyplot"
         dgbuild -a --${{ inputs.DGBUILD_FLAG }}
       working-directory: ${{ inputs.PROJECTS_DIR }}
       env:
