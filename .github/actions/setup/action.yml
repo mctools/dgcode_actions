@@ -77,7 +77,7 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       run:
         mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
-      shell: bash
+      shell: bash -el {0}
 
     # - name: Cache conda
     #   uses: actions/cache@v2
@@ -98,10 +98,6 @@ runs:
     #     python-version: ${{ inputs.PYTHON_VERSION }}
     #     use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     #     # auto-activate-base: false
-    
-    - name: Conda init (should not be needed)
-      run: conda init
-      shell: bash
 
     - name: Conda list
       run: |
@@ -109,16 +105,16 @@ runs:
         conda list
         python -V
         python3 -V
-      shell: bash
+      shell: bash -el {0}
 
-    - name: Conda list after activate
-      run: |
-        conda activate dgcodeenviron
-        conda info
-        conda list
-        python -V
-        python3 -V
-      shell: bash
+    # - name: Conda list after activate
+    #   run: |
+    #     conda activate dgcodeenviron
+    #     conda info
+    #     conda list
+    #     python -V
+    #     python3 -V
+    #   shell: bash
 
     # - name: Get OS version for caches
     #   id: os-version
@@ -164,17 +160,16 @@ runs:
 
     - name: Pip install ptpython 
       run: python3 -mpip install ptpython==3.0.23
-      shell: bash
+      shell: bash -el {0}
 
     - name: Build framework
       if: inputs.DO_DGBUILD == 'true'
       run: |
         # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-        conda activate dgcodeenviron
         . bootstrap.sh
         # python3 -c "import matplotlib.pyplot"
         dgbuild -a --${{ inputs.DGBUILD_FLAG }}
       working-directory: ${{ inputs.PROJECTS_DIR }}
       env:
         DGDEP_IGNOREBADSHEBANG: 1
-      shell: bash
+      shell: bash -el {0}
