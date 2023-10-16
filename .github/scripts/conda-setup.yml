@@ -7,7 +7,7 @@ dependencies:
   - compilers
   - cmake
   - bash
-  - boost >= 1.78
+  - pybind11
   - git
   - ncrystal
   - numpy
@@ -30,5 +30,5 @@ dependencies:
 #     - ptpython (via pip)
 variables:
   DGCODE_BOOTSTRAP_SKIP_DGDEPFIXER_CHECK: 1
-  DGCODE_USECONDABOOSTPYTHON: ALWAYS
+  DGCODE_USECONDABOOSTPYTHON: PYBIND11
   DGCODE_USESYSNCRYSTAL: ALWAYS
