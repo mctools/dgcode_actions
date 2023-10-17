@@ -79,16 +79,16 @@ runs:
     #     mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
     #   shell: bash -el {0}
 
-    - name: Cache conda
-      uses: actions/cache@v2
-      env:
-        # Increase this value to reset cache if etc/example-environment.yml has not changed
-        CACHE_NUMBER: 0
-      with:
-        path: ~/conda_pkgs_dir
-        key:
-          ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{env.CC}}-${{steps.python-version.outputs.version}}-conda-${{ env.CACHE_NUMBER }}-${{
-          hashFiles('etc/example-environment.yml') }}
+    # - name: Cache conda
+    #   uses: actions/cache@v2
+    #   env:
+    #     # Increase this value to reset cache if etc/example-environment.yml has not changed
+    #     CACHE_NUMBER: 0
+    #   with:
+    #     path: ~/conda_pkgs_dir
+    #     key:
+    #       ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{env.CC}}-${{steps.python-version.outputs.version}}-conda-${{ env.CACHE_NUMBER }}-${{
+    #       hashFiles('etc/example-environment.yml') }}
 
     - name: Setup conda environment
       uses: conda-incubator/setup-miniconda@v2
@@ -96,7 +96,7 @@ runs:
         activate-environment: dgcodeenviron
         environment-file: .github/scripts/conda-setup.yml
         python-version: ${{ inputs.PYTHON_VERSION }}
-        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+        # use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
         # auto-activate-base: false
 
     - name: Conda list
