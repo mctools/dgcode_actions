@@ -119,7 +119,9 @@ runs:
     - name: Pip install
       if: inputs.PIP_PKGS != 'none'
       id: pip-install
-      run: python3 -mpip install ${{ inputs.PIP_PKGS }}
+      run: |
+        IFS=' ' read -ra PIP_PKGS_ARRAY <<< "$PIP_PKGS"
+        python3 -mpip install "${PIP_PKGS_ARRAY[@]}"
       shell: bash -el {0}
 
     - name: Build framework

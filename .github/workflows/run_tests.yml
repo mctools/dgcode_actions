@@ -225,9 +225,9 @@ jobs:
       - name: Set pip packages to install based on packages repo
         run: |
           if [[ ${{ env.PKG_REPO }} == 'ncrystal/ncrystaldev' ]]; then
-            echo "PIP_PKGS='ptpython==3.0.23 spglib gemmi ase pymatgen'" >> $GITHUB_ENV
+            echo "PIP_PKGS=ptpython==3.0.23 spglib gemmi ase pymatgen" >> $GITHUB_ENV
           else
-            echo "PIP_PKGS='ptpython==3.0.23'" >> $GITHUB_ENV
+            echo "PIP_PKGS=ptpython==3.0.23" >> $GITHUB_ENV
           fi
 
       - name: Checkout dgcode_actions
