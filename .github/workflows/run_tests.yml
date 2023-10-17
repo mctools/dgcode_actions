@@ -233,7 +233,7 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: 'Checkout public packages repo: ${{ env.PKG_REPO_BRANCH }}'
+      - name: 'Checkout packages repo: ${{ env.PKG_REPO }}/${{ env.PKG_REPO_BRANCH }}'
         if: (env.PKG_REPO != 'dgcode/dgcode_private_projects') && (env.PKG_REPO != 'ncrystal/ncrystaldev')
         uses: actions/checkout@v3
         with:
@@ -241,7 +241,7 @@ jobs:
           ref: ${{ env.PKG_REPO_BRANCH }}
           path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: 'Checkout private packages repo: ${{ env.PKG_REPO }}'
+      - name: 'Checkout private packages repo: dgcode/dgcode_private_projects'
         if: env.PKG_REPO == 'dgcode/dgcode_private_projects'
         run: |
           if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
@@ -252,7 +252,7 @@ jobs:
         env:
           DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
 
-      - name: 'Checkout NCrystaldev repo: ${{ env.PKG_REPO }}'
+      - name: 'Checkout NCrystaldev repo: ncrystal/ncrystaldev'
         if: env.PKG_REPO == 'ncrystal/ncrystaldev'
         run: |
           if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
