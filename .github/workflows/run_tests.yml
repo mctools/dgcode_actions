@@ -207,7 +207,7 @@ jobs:
       CXX: ${{ matrix.CXX }}
       PROJECTS_DIR: projects
       EXTRA_PKG_DIR: dgcode_pkgs
-      # PIP_PKGS: none
+      PIP_PKGS: none
 
     steps:
       - name: Set env vars (with defaults for schedule events with no inputs)
@@ -222,11 +222,13 @@ jobs:
           DGCODE_BRANCH: ${{ inputs.dgcode-branch || 'main' }}
           DGBUILD_OPTIONS: ${{ inputs.dgbuild-options || '--testexcerpts=100 -a' }}
 
-      # - name: Set pip packages to install based on packages repo
-      #   run: |
-      #     if [[ ${{ env.PKG_REPO }} == 'ncrystal/ncrystaldev' ]]; then
-      #       echo "PIP_PKGS='spglib gemmi ase pymatgen'" >> $GITHUB_ENV
-      #     fi
+      - name: Set pip packages to install based on packages repo
+        run: |
+          if [[ ${{ env.PKG_REPO }} == 'ncrystal/ncrystaldev' ]]; then
+            echo "PIP_PKGS='ptpython==3.0.23 spglib gemmi ase pymatgen'" >> $GITHUB_ENV
+          else
+            echo "PIP_PKGS='ptpython==3.0.23'" >> $GITHUB_ENV
+          fi
 
       - name: Checkout dgcode_actions
         uses: actions/checkout@v3
@@ -277,16 +279,7 @@ jobs:
           DGBUILD_FLAG: ${{ matrix.build-flag }}
           INSTALL_GEANT4: ${{ inputs.without-geant4 != true }}
           DGCODE_BRANCH: ${{ env.DGCODE_BRANCH }}
-          # PIP_PKGS: ${{ env.PIP_PKGS }}
-
-      # - name: Setup Mambaforge
-      #   uses: conda-incubator/setup-miniconda@v2
-      #   with:
-      #     miniforge-variant: Mambaforge
-      #     miniforge-version: latest
-      #     activate-environment: dgcodeenviron
-      #     use-mamba: true
-      #     python-version: ${{ inputs.PYTHON_VERSION }}
+          PIP_PKGS: ${{ env.PIP_PKGS }}
 
       - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV

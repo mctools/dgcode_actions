@@ -25,10 +25,10 @@ inputs:
     description: DGCode (framework) branch to be used
     type: string
     default: main
-  # PIP_PKGS:
-  #   description: Pip packages to intsall
-  #   type: string
-  #   default: none
+  PIP_PKGS:
+    description: Pip packages to intsall
+    type: string
+    default: none
 
 runs:
   using: "composite"
@@ -107,15 +107,6 @@ runs:
         python3 -V
       shell: bash -el {0}
 
-    # - name: Conda list after activate
-    #   run: |
-    #     conda activate dgcodeenviron
-    #     conda info
-    #     conda list
-    #     python -V
-    #     python3 -V
-    #   shell: bash
-
     # - name: Get OS version for caches
     #   id: os-version
     #   uses: sersoft-gmbh/os-version-action@v2
@@ -125,41 +116,10 @@ runs:
     #   run: echo "version=$(python3 -V | sed -e 's/ /-/g')" >> $GITHUB_OUTPUT
     #   shell: bash
 
-    # - name: Install basic Prerequisites
-    #   run: . $GITHUB_WORKSPACE/.github/scripts/instalPrerequisites.sh ${{ runner.os }}
-    #   shell: bash
-
-    # - name: Cache dgdepfixer install
-    #   id: cache-dgdepfixer
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: dgdepfixerInstall
-    #     key: ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{env.CC}}-${{steps.python-version.outputs.version}}-dgdepfixer-install-20221031
-
-    # - name: Create dgdepfixer
-    #   if: steps.cache-dgdepfixer.outputs.cache-hit != 'true'
-    #   run: python3 $GITHUB_WORKSPACE/dgcode_framework/.system/depfix/src/__main__.py --create -d $GITHUB_WORKSPACE/dgdepfixerInstall
-    #   env:
-    #     DGDEP_IGNOREBADSHEBANG: 1
-    #   shell: bash
-
-    # - name: Install Geant4 action
-    #   if: inputs.INSTALL_GEANT4 == 'true'
-    #   id: install-geant4
-    #   uses: ./.github/actions/installGeant4
-    #   with:
-    #     OS_VERSION: ${{ steps.os-version.outputs.version }}
-
-    # - name: Pip install
-    #   if: inputs.PIP_PKGS != 'none'
-    #   id: pip-install
-    #   run: |
-    #     . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-    #     python3 -mpip install spglib gemmi ase pymatgen
-    #   shell: bash
-
-    - name: Pip install ptpython 
-      run: python3 -mpip install ptpython==3.0.23
+    - name: Pip install
+      if: inputs.PIP_PKGS != 'none'
+      id: pip-install
+      run: python3 -mpip install ${{ inputs.PIP_PKGS }}
       shell: bash -el {0}
 
     - name: Build framework
