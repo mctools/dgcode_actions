@@ -279,14 +279,14 @@ jobs:
           DGCODE_BRANCH: ${{ env.DGCODE_BRANCH }}
           # PIP_PKGS: ${{ env.PIP_PKGS }}
 
-      - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          activate-environment: dgcodeenviron
-          use-mamba: true
-          python-version: ${{ inputs.PYTHON_VERSION }}
+      # - name: Setup Mambaforge
+      #   uses: conda-incubator/setup-miniconda@v2
+      #   with:
+      #     miniforge-variant: Mambaforge
+      #     miniforge-version: latest
+      #     activate-environment: dgcodeenviron
+      #     use-mamba: true
+      #     python-version: ${{ inputs.PYTHON_VERSION }}
 
       - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
@@ -304,6 +304,7 @@ jobs:
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
+        shell: bash -el {0}
 
       - name: Build packages from ${{ env.PKG_REPO }} 
         id: build-extra-packages
@@ -315,6 +316,7 @@ jobs:
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
+        shell: bash -el {0}
 
       - name: Run tests
         id: run-tests
@@ -326,6 +328,7 @@ jobs:
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
+        shell: bash -el {0}
 
       - name: Setup tmate session for manual debugging
         uses: mxschmitt/action-tmate@v3
