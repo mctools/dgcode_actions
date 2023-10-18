@@ -71,8 +71,8 @@ runs:
     - name: Update environment
       if: steps.cache.outputs.cache-hit != 'true'
       run:
-        mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml 'python=${{ 
-          inputs.PYTHON_VERSION }}'
+        mamba update -n dgcodeenviron -f .github/scripts/conda-setup.yml python=${{ 
+          inputs.PYTHON_VERSION }}
       shell: bash -el {0}
 
     # - name: Cache conda
