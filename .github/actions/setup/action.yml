@@ -40,44 +40,39 @@ runs:
         path: './dgcode_framework'
         ref: ${{ inputs.DGCODE_BRANCH }}
 
-    # - name: Set up Python
-    #   uses: actions/setup-python@v4
-    #   with:
-    #     python-version: ${{ inputs.PYTHON_VERSION }}
+    - name: Setup Mambaforge
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
+        activate-environment: dgcodeenviron
+        use-mamba: true
+        python-version: ${{ inputs.PYTHON_VERSION }}
 
-    # - name: Setup Mambaforge
-    #   uses: conda-incubator/setup-miniconda@v2
-    #   with:
-    #     miniforge-variant: Mambaforge
-    #     miniforge-version: latest
-    #     activate-environment: dgcodeenviron
-    #     use-mamba: true
-    #     python-version: ${{ inputs.PYTHON_VERSION }}
+    - name: Get Date
+      id: get-date
+      run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+      shell: bash
 
-    # - name: Get Date
-    #   id: get-date
-    #   run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-    #   shell: bash
+    - name: Cache Conda env
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.CONDA }}/envs
+        key:
+          conda-${{ runner.os }}--${{ runner.arch }}--${{ 
+          inputs.PYTHON_VERSION }}--${{
+          steps.get-date.outputs.today }}-${{
+          hashFiles('.github/scripts/conda-setup.yml') }}-${{ env.CACHE_NUMBER}}
+      env:
+        # Increase this value to reset cache if etc/example-environment.yml has not changed
+        CACHE_NUMBER: 0
 
-    # - name: Cache Conda env
-    #   id: cache
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: ${{ env.CONDA }}/envs
-    #     key:
-    #       conda-${{ runner.os }}--${{ runner.arch }}--${{ 
-    #       inputs.PYTHON_VERSION }}--${{env.CC}}--${{
-    #       steps.get-date.outputs.today }}-${{
-    #       hashFiles('.github/scripts/conda-setup.yml') }}-${{ env.CACHE_NUMBER}}
-    #   env:
-    #     # Increase this value to reset cache if etc/example-environment.yml has not changed
-    #     CACHE_NUMBER: 0
-
-    # - name: Update environment
-    #   if: steps.cache.outputs.cache-hit != 'true'
-    #   run:
-    #     mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
-    #   shell: bash -el {0}
+    - name: Update environment
+      if: steps.cache.outputs.cache-hit != 'true'
+      run:
+        mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
+      shell: bash -el {0}
 
     # - name: Cache conda
     #   uses: actions/cache@v2
@@ -87,17 +82,17 @@ runs:
     #   with:
     #     path: ~/conda_pkgs_dir
     #     key:
-    #       ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{env.CC}}-${{steps.python-version.outputs.version}}-conda-${{ env.CACHE_NUMBER }}-${{
+    #       ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{steps.python-version.outputs.version}}-conda-${{ env.CACHE_NUMBER }}-${{
     #       hashFiles('etc/example-environment.yml') }}
 
-    - name: Setup conda environment
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        activate-environment: dgcodeenviron
-        environment-file: .github/scripts/conda-setup.yml
-        python-version: ${{ inputs.PYTHON_VERSION }}
-        # use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
-        # auto-activate-base: false
+    # - name: Setup conda environment
+    #   uses: conda-incubator/setup-miniconda@v2
+    #   with:
+    #     activate-environment: dgcodeenviron
+    #     environment-file: .github/scripts/conda-setup.yml
+    #     python-version: ${{ inputs.PYTHON_VERSION }}
+    #     # use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    #     # auto-activate-base: false
 
     - name: Conda list
       run: |
