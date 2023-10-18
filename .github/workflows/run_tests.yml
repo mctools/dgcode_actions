@@ -198,7 +198,7 @@ jobs:
           echo "PKG_REPO=$PKG_REPO" >> $GITHUB_ENV
           echo "PKG_REPO_BRANCH=$PKG_REPO_BRANCH" >> $GITHUB_ENV
           echo "DGCODE_BRANCH=$DGCODE_BRANCH" >> $GITHUB_ENV
-          echo "DGBUILD_OPTIONS=($DGBUILD_OPTIONS)" >> $GITHUB_ENV
+          echo "DGBUILD_OPTIONS=$DGBUILD_OPTIONS" >> $GITHUB_ENV
         env:
           PKG_REPO: ${{ inputs.pkg-repo || 'mctools/dgcode_val' }}
           PKG_REPO_BRANCH: ${{ inputs.pkg-repo-branch || 'main' }}
@@ -288,7 +288,8 @@ jobs:
         run: |
           # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS[@]}"
+          IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
+          dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS_ARRAY[@]}"
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
@@ -300,7 +301,8 @@ jobs:
         run: |
           # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
-          dgbuild -t --${{ matrix.build-flag }} "${DGBUILD_OPTIONS[@]}"
+          IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
+          dgbuild -t --${{ matrix.build-flag }} ${DGBUILD_OPTIONS_ARRAY[@]}
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
