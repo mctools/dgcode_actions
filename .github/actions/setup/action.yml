@@ -41,7 +41,12 @@ runs:
         ref: ${{ inputs.DGCODE_BRANCH }}
   
     - name: Update conda-setup.yml with python version
-      run: sed -i "s/python/python=${{ inputs.PYTHON_VERSION }}/g" .github/scripts/conda-setup.yml
+      run: |
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          sed -i "s/python/python=${{ inputs.PYTHON_VERSION }}/g" .github/scripts/conda-setup.yml
+        else
+          sed -i '' "s/python/python=${{ inputs.PYTHON_VERSION }}/g" .github/scripts/conda-setup.yml
+        fi
       shell: bash
 
 
