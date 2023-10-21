@@ -67,7 +67,8 @@ runs:
       run: |
         mkdir -p ~/my-geant4-data-cache
         conda env create -n geant4data -f .github/scripts/geant4-cache-environment.yml
-        cp -r ~/conda_pkgs_dir/* ~/my-geant4-data-cache/
+        cp -r ~/conda_pkgs_dir/*.tar.bz2 ~/my-geant4-data-cache/
+        cp -r ~/conda_pkgs_dir/*.conda ~/my-geant4-data-cache/
       shell: bash -l {0}
       env:
         CONDA_SOLVER: libmamba
@@ -78,6 +79,7 @@ runs:
       shell: bash
 
     - name: Set Geant4 data packages source
+      if: steps.cache-geant4-data-packages.outputs.cache-hit == 'true'
       run: |
         conda config --add pkgs_dirs ~/my-geant4-data-cache
       shell: bash -l {0}
