@@ -40,16 +40,6 @@ runs:
         path: './dgcode_framework'
         ref: ${{ inputs.DGCODE_BRANCH }}
   
-    - name: Update conda-setup.yml with python version
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s/python/python=${{ inputs.PYTHON_VERSION }}/g" .github/scripts/conda-setup.yml
-        else
-          sed -i '' "s/python/python=${{ inputs.PYTHON_VERSION }}/g" .github/scripts/conda-setup.yml
-        fi
-      shell: bash
-
-
     - name: Setup Mambaforge
       uses: conda-incubator/setup-miniconda@v2
       with:
@@ -59,6 +49,50 @@ runs:
         use-mamba: true
         python-version: ${{ inputs.PYTHON_VERSION }}
 
+    - name: Retrieve cached Geant4 data packages
+      id: cache-geant4-data-packages
+      uses: actions/cache@v3
+      with:
+        path: ~/my-geant4-data-cache
+        key: geant4-data-packages
+
+    - name: Install Geant4 data packages
+      if: steps.cache-geant4-data-packages.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p ~/my-geant4-data-cache
+        mamba env create -n geant4cache -f .github/scripts/geant4-cache-environment.yml --pkgs-dir ~/my-geant4-data-cache
+      shell: bash -l {0}
+
+    - name: Set Geant4 data packages source
+      run: |
+        mamba config --add pkgs_dirs ~/my-geant4-data-cache
+      shell: bash -l {0}
+
+
+    - name: Update conda-setup.yml with python version
+      run: |
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          sed -i "s/python/python=${{ inputs.PYTHON_VERSION }}/g" .github/scripts/conda-setup.yml
+        else
+          sed -i '' "s/python/python=${{ inputs.PYTHON_VERSION }}/g" .github/scripts/conda-setup.yml
+        fi
+      shell: bash
+
+    - name: Create dgcode environment
+      run: |
+        conda config --show pkgs_dirs
+        mamba env create -n dgcodeenviron -f .github/scripts/conda-setup.yml
+      shell: bash -el {0}
+
+    # - name: Setup Mambaforge
+    #   uses: conda-incubator/setup-miniconda@v2
+    #   with:
+    #     miniforge-variant: Mambaforge
+    #     miniforge-version: latest
+    #     activate-environment: dgcodeenviron
+    #     use-mamba: true
+    #     python-version: ${{ inputs.PYTHON_VERSION }}
+
     # ##
     # - name: Setup Miniconda
     #   uses: conda-incubator/setup-miniconda@v2
@@ -67,24 +101,24 @@ runs:
     #     python-version: ${{ inputs.PYTHON_VERSION }}
     # ##
 
-    - name: Get Date
-      id: get-date
-      run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-      shell: bash
+    # - name: Get Date
+    #   id: get-date
+    #   run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+    #   shell: bash
 
-    - name: Cache Conda env
-      id: cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.CONDA }}/envs
-        key:
-          conda-${{ runner.os }}--${{ runner.arch }}--${{ 
-          inputs.PYTHON_VERSION }}--${{
-          steps.get-date.outputs.today }}-${{
-          hashFiles('.github/scripts/conda-setup.yml') }}-${{ env.CACHE_NUMBER}}
-      env:
-        # Increase this value to reset cache if etc/example-environment.yml has not changed
-        CACHE_NUMBER: 0
+    # - name: Cache Conda env
+    #   id: cache
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ${{ env.CONDA }}/envs
+    #     key:
+    #       conda-${{ runner.os }}--${{ runner.arch }}--${{ 
+    #       inputs.PYTHON_VERSION }}--${{
+    #       steps.get-date.outputs.today }}-${{
+    #       hashFiles('.github/scripts/conda-setup.yml') }}-${{ env.CACHE_NUMBER}}
+    #   env:
+    #     # Increase this value to reset cache if etc/example-environment.yml has not changed
+    #     CACHE_NUMBER: 0
 
     # - name: Update environment
     #   if: steps.cache.outputs.cache-hit != 'true'
@@ -94,11 +128,11 @@ runs:
     #   env:
     #     CONDA_SOLVER: libmamba
 
-    - name: Update environment
-      if: steps.cache.outputs.cache-hit != 'true'
-      run:
-        mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
-      shell: bash -el {0}
+    # - name: Update environment
+    #   if: steps.cache.outputs.cache-hit != 'true'
+    #   run:
+    #     mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
+    #   shell: bash -el {0}
 
     # - name: Cache conda
     #   uses: actions/cache@v2

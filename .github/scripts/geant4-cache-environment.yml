@@ -1,0 +1,6 @@
+name: geant4cache
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - geant4
