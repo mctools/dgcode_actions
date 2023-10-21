@@ -40,14 +40,22 @@ runs:
         path: './dgcode_framework'
         ref: ${{ inputs.DGCODE_BRANCH }}
 
-    - name: Setup Mambaforge
+    # - name: Setup Mambaforge
+    #   uses: conda-incubator/setup-miniconda@v2
+    #   with:
+    #     miniforge-variant: Mambaforge
+    #     miniforge-version: latest
+    #     activate-environment: dgcodeenviron
+    #     use-mamba: true
+    #     python-version: ${{ inputs.PYTHON_VERSION }}
+
+    ##
+    - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniforge-variant: Mambaforge
-        miniforge-version: latest
         activate-environment: dgcodeenviron
-        use-mamba: true
         python-version: ${{ inputs.PYTHON_VERSION }}
+    ##
 
     - name: Get Date
       id: get-date
