@@ -40,13 +40,19 @@ runs:
         path: './dgcode_framework'
         ref: ${{ inputs.DGCODE_BRANCH }}
   
-    - name: Setup Mambaforge
+    # - name: Setup Mambaforge
+    #   uses: conda-incubator/setup-miniconda@v2
+    #   with:
+    #     miniforge-variant: Mambaforge
+    #     miniforge-version: latest
+    #     activate-environment: dgcodeenviron
+    #     use-mamba: true
+    #     python-version: ${{ inputs.PYTHON_VERSION }}
+
+    - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniforge-variant: Mambaforge
-        miniforge-version: latest
         activate-environment: dgcodeenviron
-        use-mamba: true
         python-version: ${{ inputs.PYTHON_VERSION }}
 
     - name: Retrieve cached Geant4 data packages
@@ -60,12 +66,14 @@ runs:
       if: steps.cache-geant4-data-packages.outputs.cache-hit != 'true'
       run: |
         mkdir -p ~/my-geant4-data-cache
-        mamba env create -n geant4cache -f .github/scripts/geant4-cache-environment.yml --pkgs-dir ~/my-geant4-data-cache
+        conda env create -n geant4cache -f .github/scripts/geant4-cache-environment.yml --pkgs-dir ~/my-geant4-data-cache
       shell: bash -l {0}
+      env:
+        CONDA_SOLVER: libmamba
 
     - name: Set Geant4 data packages source
       run: |
-        mamba config --add pkgs_dirs ~/my-geant4-data-cache
+        conda config --add pkgs_dirs ~/my-geant4-data-cache
       shell: bash -l {0}
 
 
@@ -81,8 +89,10 @@ runs:
     - name: Create dgcode environment
       run: |
         conda config --show pkgs_dirs
-        mamba env create -n dgcodeenviron -f .github/scripts/conda-setup.yml
+        conda env create -n dgcodeenviron -f .github/scripts/conda-setup.yml
       shell: bash -el {0}
+      env:
+        CONDA_SOLVER: libmamba
 
     # - name: Setup Mambaforge
     #   uses: conda-incubator/setup-miniconda@v2
