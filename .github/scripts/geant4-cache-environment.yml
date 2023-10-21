@@ -1,6 +1,16 @@
-name: geant4cache
+name: geant4data
 channels:
   - nodefaults
   - conda-forge
 dependencies:
-  - geant4
+  - geant4-data-abla
+  - geant4-data-emlow
+  - geant4-data-ensdfstate
+  - geant4-data-incl
+  - geant4-data-ndl
+  - geant4-data-particlexs
+  - geant4-data-photonevaporation
+  - geant4-data-pii
+  - geant4-data-radioactivedecay
+  - geant4-data-realsurface
+  - geant4-data-saiddata
