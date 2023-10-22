@@ -40,7 +40,7 @@ runs:
         path: './dgcode_framework'
         ref: ${{ inputs.DGCODE_BRANCH }}
   
-    - name: Setup Mambaforge
+    - name: Setup Mambaforge #mamba
       uses: conda-incubator/setup-miniconda@v2
       with:
         miniforge-variant: Mambaforge
@@ -49,7 +49,7 @@ runs:
         use-mamba: true
         # python-version: ${{ inputs.PYTHON_VERSION }}
 
-    # - name: Setup Miniconda
+    # - name: Setup Miniconda #conda
     #   uses: conda-incubator/setup-miniconda@v2
     #   with:
     #     activate-environment: dgcodeenviron
@@ -68,6 +68,8 @@ runs:
         mkdir -p ~/my-geant4-data-cache/noarch
         cp -r ~/conda_pkgs_dir/*.tar.bz2 ~/my-geant4-data-cache/noarch/
       shell: bash -l {0}
+      # env:
+      #   CONDA_SOLVER: libmamba
 
     - name: DEBUG list dir content
       run: ls -l ~/my-geant4-data-cache/noarch
@@ -76,9 +78,11 @@ runs:
     - name: Set Geant4 data packages source
       if: steps.cache-geant4-data-packages.outputs.cache-hit == 'true'
       run: |
-        # conda config --add channels file://~/my-geant4-data-cache
-        conda config --add pkgs_dirs ~/my-geant4-data-cache/noarch
+        # conda config --add channels file://~/my-geant4-data-cache #conda
+        conda config --add pkgs_dirs ~/my-geant4-data-cache/noarch #mamba
       shell: bash -l {0}
+      # env:
+      #   CONDA_SOLVER: libmamba
 
     - name: Update conda-setup.yml with python version
       run: |
@@ -91,83 +95,17 @@ runs:
 
     - name: Setup dgcode environment
       run: |
-        # conda config --show pkgs_dirs
-        mamba info
-        mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
+        # conda config --show pkgs_dirs #conda
+        # mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml #conda
+        mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml #mamba
       shell: bash -el {0}
-
-    # - name: Setup Mambaforge
-    #   uses: conda-incubator/setup-miniconda@v2
-    #   with:
-    #     miniforge-variant: Mambaforge
-    #     miniforge-version: latest
-    #     activate-environment: dgcodeenviron
-    #     use-mamba: true
-    #     python-version: ${{ inputs.PYTHON_VERSION }}
-
-    # ##
-    # - name: Setup Miniconda
-    #   uses: conda-incubator/setup-miniconda@v2
-    #   with:
-    #     activate-environment: dgcodeenviron
-    #     python-version: ${{ inputs.PYTHON_VERSION }}
-    # ##
+      # env:
+      #   CONDA_SOLVER: libmamba
 
     # - name: Get Date
     #   id: get-date
     #   run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
     #   shell: bash
-
-    # - name: Cache Conda env
-    #   id: cache
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: ${{ env.CONDA }}/envs
-    #     key:
-    #       conda-${{ runner.os }}--${{ runner.arch }}--${{ 
-    #       inputs.PYTHON_VERSION }}--${{
-    #       steps.get-date.outputs.today }}-${{
-    #       hashFiles('.github/scripts/conda-setup.yml') }}-${{ env.CACHE_NUMBER}}
-    #   env:
-    #     # Increase this value to reset cache if etc/example-environment.yml has not changed
-    #     CACHE_NUMBER: 0
-
-    # - name: Update environment
-    #   if: steps.cache.outputs.cache-hit != 'true'
-    #   run:
-    #     conda env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
-    #   shell: bash -el {0}
-    #   env:
-    #     CONDA_SOLVER: libmamba
-
-    # - name: Update environment
-    #   if: steps.cache.outputs.cache-hit != 'true'
-    #   run:
-    #     mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
-    #   shell: bash -el {0}
-
-    # - name: Cache conda
-    #   uses: actions/cache@v2
-    #   env:
-    #     # Increase this value to reset cache if etc/example-environment.yml has not changed
-    #     CACHE_NUMBER: 0
-    #   with:
-    #     path: ~/conda_pkgs_dir
-    #     key:
-    #       ${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{steps.python-version.outputs.version}}-conda-${{ env.CACHE_NUMBER }}-${{
-    #       hashFiles('etc/example-environment.yml') }}
-
-
-    # - name: Setup conda environment
-    #   uses: conda-incubator/setup-miniconda@v2
-    #   with:
-    #     activate-environment: dgcodeenviron
-    #     environment-file: .github/scripts/conda-setup.yml
-    #     python-version: ${{ inputs.PYTHON_VERSION }}
-    #     # use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
-    #     # auto-activate-base: false
-    #   env:
-    #       CONDA_SOLVER: libmamba
 
     - name: Conda list
       run: |
