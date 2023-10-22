@@ -1,6 +1,5 @@
 name: dgcodeenviron
 channels:
-  - file://~/my-geant4-data-cache
   - nodefaults
   - conda-forge
 dependencies:
