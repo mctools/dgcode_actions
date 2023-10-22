@@ -135,10 +135,9 @@ runs:
     - name: Build framework
       if: inputs.DO_DGBUILD == 'true'
       run: |
-        # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
         . bootstrap.sh
         # python3 -c "import matplotlib.pyplot"
-        # dgbuild -a --${{ inputs.DGBUILD_FLAG }}
+        dgbuild -a --${{ inputs.DGBUILD_FLAG }}
       working-directory: ${{ inputs.PROJECTS_DIR }}
       env:
         DGDEP_IGNOREBADSHEBANG: 1

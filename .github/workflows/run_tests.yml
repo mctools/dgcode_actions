@@ -302,7 +302,7 @@ jobs:
           # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
           IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
-          # dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS_ARRAY[@]}"
+          dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS_ARRAY[@]}"
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
@@ -315,7 +315,7 @@ jobs:
           # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
           . bootstrap.sh
           IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
-          # dgbuild -t --${{ matrix.build-flag }} ${DGBUILD_OPTIONS_ARRAY[@]}
+          dgbuild -t --${{ matrix.build-flag }} ${DGBUILD_OPTIONS_ARRAY[@]}
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
@@ -327,16 +327,16 @@ jobs:
         with:
           limit-access-to-actor: true
 
-  #     - name: Rename test result
-  #       id: rename-test-result
-  #       if: inputs.skip-tests != true && steps.run-tests.outcome == 'success'
-  #       run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+      - name: Rename test result
+        id: rename-test-result
+        if: inputs.skip-tests != true && steps.run-tests.outcome == 'success'
+        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
-  #     - uses: actions/upload-artifact@v3  # upload test results
-  #       if: inputs.skip-tests != true && steps.rename-test-result.outcome == 'success'
-  #       with:
-  #         name: test-results
-  #         path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+      - uses: actions/upload-artifact@v3  # upload test results
+        if: inputs.skip-tests != true && steps.rename-test-result.outcome == 'success'
+        with:
+          name: test-results
+          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
   # report:
   #   name: Test reporting
