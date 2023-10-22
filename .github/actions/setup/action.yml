@@ -65,8 +65,9 @@ runs:
       if: steps.cache-geant4-data-packages.outputs.cache-hit != 'true'
       run: |
         mkdir -p ~/my-geant4-data-cache
+        mkdir -p ~/my-geant4-data-cache/noarch
         mamba env create -n geant4data -f .github/scripts/geant4-cache-environment.yml
-        cp -r ~/conda_pkgs_dir/*.tar.bz2 ~/my-geant4-data-cache/
+        cp -r ~/conda_pkgs_dir/*.tar.bz2 ~/my-geant4-data-cache/noarch/
       shell: bash -l {0}
 
     - name: DEBUG list dir content
