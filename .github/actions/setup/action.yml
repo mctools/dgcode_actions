@@ -77,7 +77,7 @@ runs:
     - name: Set Geant4 data packages source
       if: steps.cache-geant4-data-packages.outputs.cache-hit == 'true'
       run: |
-        mamba config --add channels file://~/my-geant4-data-cache
+        conda config --add channels file://~/my-geant4-data-cache
       shell: bash -l {0}
 
     - name: Update conda-setup.yml with python version
