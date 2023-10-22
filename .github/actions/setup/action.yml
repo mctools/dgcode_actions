@@ -69,8 +69,8 @@ runs:
         cp -r ~/conda_pkgs_dir/*.tar.bz2 ~/my-geant4-data-cache/
         # cp -r ~/conda_pkgs_dir/*.conda ~/my-geant4-data-cache/
       shell: bash -l {0}
-      env:
-        CONDA_SOLVER: libmamba
+      # env:
+        # CONDA_SOLVER: libmamba
 
     - name: DEBUG list dir content
       run: |
@@ -99,8 +99,8 @@ runs:
         conda config --show pkgs_dirs
         conda env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
       shell: bash -el {0}
-      env:
-        CONDA_SOLVER: libmamba
+      # env:
+        # CONDA_SOLVER: libmamba
 
     # - name: Setup Mambaforge
     #   uses: conda-incubator/setup-miniconda@v2
