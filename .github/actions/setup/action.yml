@@ -64,7 +64,6 @@ runs:
     - name: Install Geant4 data packages
       if: steps.cache-geant4-data-packages.outputs.cache-hit != 'true'
       run: |
-        mkdir -p ~/my-geant4-data-cache
         mkdir -p ~/my-geant4-data-cache/noarch
         mamba env create -n geant4data -f .github/scripts/geant4-cache-environment.yml
         cp -r ~/conda_pkgs_dir/*.tar.bz2 ~/my-geant4-data-cache/noarch/
@@ -72,13 +71,15 @@ runs:
 
     - name: DEBUG list dir content
       run: |
-        ls -l ~/my-geant4-data-cache
+        ls -l ~/my-geant4-data-cache/noarch
       shell: bash
 
     - name: Set Geant4 data packages source
       if: steps.cache-geant4-data-packages.outputs.cache-hit == 'true'
       run: |
         conda config --add channels file://~/my-geant4-data-cache
+        conda index ~/my-geant4-data-cache
+
       shell: bash -l {0}
 
     - name: Update conda-setup.yml with python version
@@ -93,6 +94,8 @@ runs:
     - name: Setup dgcode environment
       run: |
         # conda config --show pkgs_dirs
+        mamba info
+        mamba search --override-channels -c file://~/my-geant4-data-cache
         mamba env update -n dgcodeenviron -f .github/scripts/conda-setup.yml
       shell: bash -el {0}
 
