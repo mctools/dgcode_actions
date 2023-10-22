@@ -81,8 +81,8 @@ runs:
     - name: Set Geant4 data packages source
       if: steps.cache-geant4-data-packages.outputs.cache-hit == 'true'
       run: |
-        conda config --add channels file://~/my-geant4-data-cache
-        # conda config --add pkgs_dirs ~/my-geant4-data-cache
+        # conda config --add channels file://~/my-geant4-data-cache
+        conda config --add pkgs_dirs ~/my-geant4-data-cache
       shell: bash -l {0}
 
 
@@ -207,7 +207,7 @@ runs:
         # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
         . bootstrap.sh
         # python3 -c "import matplotlib.pyplot"
-        dgbuild -a --${{ inputs.DGBUILD_FLAG }}
+        # dgbuild -a --${{ inputs.DGBUILD_FLAG }}
       working-directory: ${{ inputs.PROJECTS_DIR }}
       env:
         DGDEP_IGNOREBADSHEBANG: 1
