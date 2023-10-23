@@ -64,7 +64,9 @@ runs:
     - name: Install Geant4 data packages
       if: steps.cache-geant4-data-packages.outputs.cache-hit != 'true'
       run: |
-        python .github/scripts/cached_noarch_definitions.py --yml > ~/cached_noarch_definitions.yml
+        python -V
+        python3 -V
+        python3 .github/scripts/cached_noarch_definitions.py --yml > ~/cached_noarch_definitions.yml
         mamba env create -n geant4data -f ~/cached_noarch_definitions.yml
         mkdir -p ~/my-geant4-data-cache/noarch && cp -r ~/conda_pkgs_dir/*.tar.bz2 ~/my-geant4-data-cache/noarch/
       shell: bash -l {0}
@@ -101,7 +103,7 @@ runs:
       shell: bash -el {0}
 
     - name: Verify that Geant4 data packages match the cached versions
-      run: python .github/scripts/cached_noarch_definitions.py --verify-usage
+      run: python3 .github/scripts/cached_noarch_definitions.py --verify-usage
       shell: bash -el {0}
       # env:
       #   CONDA_SOLVER: libmamba
