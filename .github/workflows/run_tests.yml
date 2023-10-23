@@ -7,10 +7,10 @@ on:
 
   workflow_dispatch:
     inputs:
-      dgcode-branch:
+      dgcode-branch: #rename dgbuild
         type: string
         description: Framework branch to use
-        default: main
+        default: dev_throwaway_branch_oct2023
       pkg-repo:
         type: choice
         description: Package repository
@@ -231,42 +231,42 @@ jobs:
         with:
           repository: mctools/dgcode_actions
 
-      - name: 'Checkout packages repo: ${{ env.PKG_REPO }}/${{ env.PKG_REPO_BRANCH }}'
-        if: (env.PKG_REPO != 'dgcode/dgcode_private_projects') && (env.PKG_REPO != 'ncrystal/ncrystaldev')
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ env.PKG_REPO }}
-          ref: ${{ env.PKG_REPO_BRANCH }}
-          path: './${{ env.EXTRA_PKG_DIR }}'
+      # - name: 'Checkout packages repo: ${{ env.PKG_REPO }}/${{ env.PKG_REPO_BRANCH }}'
+      #   if: (env.PKG_REPO != 'dgcode/dgcode_private_projects') && (env.PKG_REPO != 'ncrystal/ncrystaldev')
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: ${{ env.PKG_REPO }}
+      #     ref: ${{ env.PKG_REPO_BRANCH }}
+      #     path: './${{ env.EXTRA_PKG_DIR }}'
 
-      - name: 'Checkout private packages repo: dgcode/dgcode_private_projects'
-        if: env.PKG_REPO == 'dgcode/dgcode_private_projects'
-        run: |
-          if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
-            echo "$DMSC_GITLAB_CERT" > root_cert.pem
-            export GIT_SSL_CAINFO=root_cert.pem
-          fi
-          git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
-        env:
-          DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
+      # - name: 'Checkout private packages repo: dgcode/dgcode_private_projects'
+      #   if: env.PKG_REPO == 'dgcode/dgcode_private_projects'
+      #   run: |
+      #     if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
+      #       echo "$DMSC_GITLAB_CERT" > root_cert.pem
+      #       export GIT_SSL_CAINFO=root_cert.pem
+      #     fi
+      #     git clone https://oauth2:${{ secrets.PRIVATE_PROJ_REPO_PAT }}@${{ secrets.PRIVATE_PROJ_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+      #   env:
+      #     DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
 
-      - name: 'Checkout NCrystaldev repo: ncrystal/ncrystaldev'
-        if: env.PKG_REPO == 'ncrystal/ncrystaldev'
-        run: |
-          if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
-            echo "$DMSC_GITLAB_CERT" > root_cert.pem
-            export GIT_SSL_CAINFO=root_cert.pem
-          fi
-          git clone https://oauth2:${{ secrets.NCRYSTALDEV_REPO_PAT }}@${{ secrets.NCRYSTALDEV_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
-        env:
-          DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
+      # - name: 'Checkout NCrystaldev repo: ncrystal/ncrystaldev'
+      #   if: env.PKG_REPO == 'ncrystal/ncrystaldev'
+      #   run: |
+      #     if [ ! -z "${DMSC_GITLAB_CERT}" ]; then
+      #       echo "$DMSC_GITLAB_CERT" > root_cert.pem
+      #       export GIT_SSL_CAINFO=root_cert.pem
+      #     fi
+      #     git clone https://oauth2:${{ secrets.NCRYSTALDEV_REPO_PAT }}@${{ secrets.NCRYSTALDEV_REPO_URL }} $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+      #   env:
+      #     DMSC_GITLAB_CERT: ${{ secrets.DMSC_GITLAB_CERT }}
 
-      - name: 'Checkout package repo branch: ${{ env.PKG_REPO_BRANCH }}'
-        run: |
-          cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
-          git checkout ${{ env.PKG_REPO_BRANCH }}
+      # - name: 'Checkout package repo branch: ${{ env.PKG_REPO_BRANCH }}'
+      #   run: |
+      #     cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}
+      #     git checkout ${{ env.PKG_REPO_BRANCH }}
 
-      - name: Setup and build framework (mctools/dgcode/${{ env.DGCODE_BRANCH }})
+      - name: Setup and build framework (mctools/dgbuild/${{ env.DGCODE_BRANCH }})
         id: setup-framework
         uses: ./.github/actions/setup
         with:
@@ -277,17 +277,22 @@ jobs:
           DGCODE_BRANCH: ${{ env.DGCODE_BRANCH }}
           PIP_PKGS: ${{ env.PIP_PKGS }}
 
-      - name: Add package repo to the extra pkg path
-        run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
+      - name: Pip install dgbuild
+        id: pip-install-dgbuild
+        run: |
+          python3 -mpip install .
+        shell: bash -el {0}
+        working-directory: ./dgbuild_framework
+
+      # - name: Add package repo to the extra pkg path
+      #   run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV
 
       - name: Version report
         id: vesion-report
         if: steps.setup-framework.outcome == 'success'
         run: |
-          # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          . bootstrap.sh
-          echo "Projects repo (${{env.PKG_REPO}}/${{ env.PKG_REPO_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}; git rev-parse --short HEAD )
-          echo "Framework repo (mctools/dgcode/${{ env.DGCODE_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/dgcode_framework; git rev-parse --short HEAD )
+          # echo "Projects repo (${{env.PKG_REPO}}/${{ env.PKG_REPO_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}; git rev-parse --short HEAD )
+          echo "Framework repo (mctools/dgbuild/${{ env.DGCODE_BRANCH }}) commit: "$( cd $GITHUB_WORKSPACE/dgbuild_framework; git rev-parse --short HEAD )
           echo "Actions repo (mctools/dgcode_actions/$GITHUB_REF_NAME) commit: "$( cd $GITHUB_WORKSPACE; git rev-parse --short HEAD )
           echo "pip list: "$(python3 -mpip list)
         working-directory: ${{ env.PROJECTS_DIR }}
@@ -295,27 +300,24 @@ jobs:
           DGDEP_IGNOREBADSHEBANG: 1
         shell: bash -el {0}
 
-      - name: Build packages from ${{ env.PKG_REPO }} 
-        id: build-extra-packages
-        if: steps.setup-framework.outcome == 'success'
-        run: |
-          # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          . bootstrap.sh
-          IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
-          dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS_ARRAY[@]}"
-        working-directory: ${{ env.PROJECTS_DIR }}
-        env:
-          DGDEP_IGNOREBADSHEBANG: 1
-        shell: bash -el {0}
+      # - name: Build packages from ${{ env.PKG_REPO }} 
+      #   id: build-extra-packages
+      #   if: steps.setup-framework.outcome == 'success'
+      #   run: |
+      #     # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
+      #     . bootstrap.sh
+      #     IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
+      #     dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS_ARRAY[@]}"
+      #   working-directory: ${{ env.PROJECTS_DIR }}
+      #   env:
+      #     DGDEP_IGNOREBADSHEBANG: 1
+      #   shell: bash -el {0}
 
       - name: Run tests
         id: run-tests
-        if: inputs.skip-tests != true && steps.build-extra-packages.outcome == 'success'
+        if: inputs.skip-tests != true
         run: |
-          # . $GITHUB_WORKSPACE/dgdepfixerInstall/setup.sh
-          . bootstrap.sh
-          IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
-          dgbuild -t --${{ matrix.build-flag }} ${DGBUILD_OPTIONS_ARRAY[@]}
+          dgbuild2 -t
         working-directory: ${{ env.PROJECTS_DIR }}
         env:
           DGDEP_IGNOREBADSHEBANG: 1
@@ -327,16 +329,16 @@ jobs:
         with:
           limit-access-to-actor: true
 
-      - name: Rename test result
-        id: rename-test-result
-        if: inputs.skip-tests != true && steps.run-tests.outcome == 'success'
-        run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+      # - name: Rename test result
+      #   id: rename-test-result
+      #   if: inputs.skip-tests != true && steps.run-tests.outcome == 'success'
+      #   run: mv $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat.xml $GITHUB_WORKSPACE/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
-      - uses: actions/upload-artifact@v3  # upload test results
-        if: inputs.skip-tests != true && steps.rename-test-result.outcome == 'success'
-        with:
-          name: test-results
-          path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
+      # - uses: actions/upload-artifact@v3  # upload test results
+      #   if: inputs.skip-tests != true && steps.rename-test-result.outcome == 'success'
+      #   with:
+      #     name: test-results
+      #     path: ${{ github.workspace }}/${{ env.PROJECTS_DIR }}/.bld/testresults/dgtest_results_junitformat_${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.dgcode-${{ matrix.build-flag }}.xml
 
   # report:
   #   name: Test reporting

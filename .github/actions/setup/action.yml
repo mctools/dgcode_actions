@@ -36,8 +36,8 @@ runs:
     - name: Checkout dgcode framework
       uses: actions/checkout@v3
       with:
-        repository: mctools/dgcode
-        path: './dgcode_framework'
+        repository: mctools/dgbuild
+        path: './dgbuild_framework'
         ref: ${{ inputs.DGCODE_BRANCH }}
 
     - name: Setup Mambaforge #mamba
@@ -71,9 +71,9 @@ runs:
       # env:
       #   CONDA_SOLVER: libmamba
 
-    - name: DEBUG list dir content
-      run: ls -l ~/my-geant4-data-cache/noarch
-      shell: bash
+    # - name: DEBUG list dir content
+    #   run: ls -l ~/my-geant4-data-cache/noarch
+    #   shell: bash
 
     - name: Set Geant4 data packages source
       if: steps.cache-geant4-data-packages.outputs.cache-hit == 'true'
@@ -138,13 +138,13 @@ runs:
         python3 -mpip install "${PIP_PKGS_ARRAY[@]}"
       shell: bash -el {0}
 
-    - name: Build framework
-      if: inputs.DO_DGBUILD == 'true'
-      run: |
-        . bootstrap.sh
-        # python3 -c "import matplotlib.pyplot"
-        dgbuild -a --${{ inputs.DGBUILD_FLAG }}
-      working-directory: ${{ inputs.PROJECTS_DIR }}
-      env:
-        DGDEP_IGNOREBADSHEBANG: 1
-      shell: bash -el {0}
+    # - name: Build framework
+    #   if: inputs.DO_DGBUILD == 'true'
+    #   run: |
+    #     . bootstrap.sh
+    #     # python3 -c "import matplotlib.pyplot"
+    #     dgbuild -a --${{ inputs.DGBUILD_FLAG }}
+    #   working-directory: ${{ inputs.PROJECTS_DIR }}
+    #   env:
+    #     DGDEP_IGNOREBADSHEBANG: 1
+    #   shell: bash -el {0}
