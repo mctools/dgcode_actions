@@ -32,7 +32,7 @@ inputs:
   USE_MAMBA:
     description: Use mamba instead of conda
     type: boolean
-    default: true
+    default: false
 
 runs:
   using: "composite"
