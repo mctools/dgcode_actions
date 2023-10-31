@@ -75,10 +75,14 @@ on:
         type: boolean
         description: Launch manual debugging tmate session on failure
         default: false
-      without-geant4:
+      # without-geant4:
+      #   type: boolean
+      #   description: Do not install Geant4
+      #   default: false
+      use-mamba:
         type: boolean
-        description: Do not install Geant4
-        default: false
+        description: Use Mamba instead of Conda(with the libmamba solver)
+        default: true
 
   workflow_call:
     inputs:
@@ -273,9 +277,10 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python }}
           PROJECTS_DIR: ${{ env.PROJECTS_DIR }}
           DGBUILD_FLAG: ${{ matrix.build-flag }}
-          INSTALL_GEANT4: ${{ inputs.without-geant4 != true }}
+          # INSTALL_GEANT4: ${{ inputs.without-geant4 != true }}
           DGCODE_BRANCH: ${{ env.DGCODE_BRANCH }}
           PIP_PKGS: ${{ env.PIP_PKGS }}
+          USE_MAMBA: ${{ inputs.use-mamba == true }}
 
       - name: Add package repo to the extra pkg path
         run: echo "DGCODE_EXTRA_PKG_PATH=$GITHUB_WORKSPACE/${{ env.EXTRA_PKG_DIR }}" >> $GITHUB_ENV

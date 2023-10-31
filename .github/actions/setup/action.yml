@@ -9,10 +9,10 @@ inputs:
     description: Python version to set up
     type: string
     default: '3.9'
-  INSTALL_GEANT4:
-    description: Install Geant4 optional dependency
-    type: boolean
-    default: true
+  # INSTALL_GEANT4:
+  #   description: Install Geant4 optional dependency
+  #   type: boolean
+  #   default: true
   DO_DGBUILD:
     description: Option to turn off tailing dgbuild
     type: boolean
@@ -32,7 +32,7 @@ inputs:
   USE_MAMBA:
     description: Use mamba instead of conda
     type: boolean
-    default: false
+    default: true
 
 runs:
   using: "composite"
@@ -50,12 +50,6 @@ runs:
         miniforge-version: latest
         activate-environment: dgcodeenviron
         use-mamba: ${{ inputs.USE_MAMBA }}
-        # python-version: ${{ inputs.PYTHON_VERSION }}
-
-    # - name: Setup Miniconda #conda
-    #   uses: conda-incubator/setup-miniconda@v2
-    #   with:
-    #     activate-environment: dgcodeenviron
 
     - name: Retrieve cached Geant4 data packages
       id: cache-geant4-data-packages
@@ -135,11 +129,11 @@ runs:
         python3 -mpip install "${PIP_PKGS_ARRAY[@]}"
       shell: bash -el {0}
 
-    # - name: Build framework
-    #   if: inputs.DO_DGBUILD == 'true'
-    #   run: |
-    #     . bootstrap.sh
-    #     # python3 -c "import matplotlib.pyplot"
-    #     dgbuild -a --${{ inputs.DGBUILD_FLAG }}
-    #   working-directory: ${{ inputs.PROJECTS_DIR }}
-    #   shell: bash -el {0}
+    - name: Build framework
+      if: inputs.DO_DGBUILD == 'true'
+      run: |
+        . bootstrap.sh
+        # python3 -c "import matplotlib.pyplot"
+        dgbuild -a --${{ inputs.DGBUILD_FLAG }}
+      working-directory: ${{ inputs.PROJECTS_DIR }}
+      shell: bash -el {0}
