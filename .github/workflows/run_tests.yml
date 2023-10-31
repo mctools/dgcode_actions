@@ -296,8 +296,6 @@ jobs:
           echo "Actions repo (mctools/dgcode_actions/$GITHUB_REF_NAME) commit: "$( cd $GITHUB_WORKSPACE; git rev-parse --short HEAD )
           echo "pip list: "$(python3 -mpip list)
         working-directory: ${{ env.PROJECTS_DIR }}
-        env:
-          DGDEP_IGNOREBADSHEBANG: 1
         shell: bash -el {0}
 
       # - name: Build packages from ${{ env.PKG_REPO }} 
@@ -309,8 +307,6 @@ jobs:
       #     IFS=' ' read -ra DGBUILD_OPTIONS_ARRAY <<< "$DGBUILD_OPTIONS"
       #     dgbuild --${{ matrix.build-flag }} "${DGBUILD_OPTIONS_ARRAY[@]}"
       #   working-directory: ${{ env.PROJECTS_DIR }}
-      #   env:
-      #     DGDEP_IGNOREBADSHEBANG: 1
       #   shell: bash -el {0}
 
       - name: Run tests
@@ -319,8 +315,6 @@ jobs:
         run: |
           dgbuild2 -t
         working-directory: ${{ env.PROJECTS_DIR }}
-        env:
-          DGDEP_IGNOREBADSHEBANG: 1
         shell: bash -el {0}
 
       - name: Setup tmate session for manual debugging

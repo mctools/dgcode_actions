@@ -29,6 +29,10 @@ inputs:
     description: Pip packages to intsall
     type: string
     default: none
+  USE_MAMBA:
+    description: Use mamba instead of conda
+    type: boolean
+    default: true
 
 runs:
   using: "composite"
@@ -40,13 +44,12 @@ runs:
         path: './dgbuild_framework'
         ref: ${{ inputs.DGCODE_BRANCH }}
 
-    - name: Setup Mambaforge #mamba
+    - name: Setup ${{ inputs.USE_MAMBA == 'true' && 'Mamba' || 'Conda' }}
       uses: conda-incubator/setup-miniconda@v2
       with:
-        # miniforge-variant: Mambaforge
         miniforge-version: latest
         activate-environment: dgcodeenviron
-        use-mamba: true
+        use-mamba: ${{ inputs.USE_MAMBA }}
         # python-version: ${{ inputs.PYTHON_VERSION }}
 
     # - name: Setup Miniconda #conda
@@ -80,8 +83,13 @@ runs:
     - name: Set Geant4 data packages source
       if: steps.cache-geant4-data-packages.outputs.cache-hit == 'true'
       run: |
-        # conda config --add channels file://~/my-geant4-data-cache #conda
-        conda config --add pkgs_dirs ~/my-geant4-data-cache/noarch #mamba
+        if [[ "${{ inputs.USE_MAMBA }}" == "true" ]]; then
+          conda config --add pkgs_dirs ~/my-geant4-data-cache/noarch #mamba
+          echo "DEBUG mamba branch"
+        else
+          conda config --add channels file://~/my-geant4-data-cache #conda
+          echo "DEBUG conda branch"
+        fi
       shell: bash -l {0}
       # env:
       #   CONDA_SOLVER: libmamba
@@ -108,13 +116,6 @@ runs:
       # env:
       #   CONDA_SOLVER: libmamba
 
-
-
-    # - name: Get Date
-    #   id: get-date
-    #   run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-    #   shell: bash
-
     - name: Conda list
       run: |
         conda info
@@ -122,15 +123,6 @@ runs:
         python -V
         python3 -V
       shell: bash -el {0}
-
-    # - name: Get OS version for caches
-    #   id: os-version
-    #   uses: sersoft-gmbh/os-version-action@v2
-
-    # - name: Get Python version for caches
-    #   id: python-version
-    #   run: echo "version=$(python3 -V | sed -e 's/ /-/g')" >> $GITHUB_OUTPUT
-    #   shell: bash
 
     - name: Pip install
       if: inputs.PIP_PKGS != 'none'
@@ -147,6 +139,4 @@ runs:
     #     # python3 -c "import matplotlib.pyplot"
     #     dgbuild -a --${{ inputs.DGBUILD_FLAG }}
     #   working-directory: ${{ inputs.PROJECTS_DIR }}
-    #   env:
-    #     DGDEP_IGNOREBADSHEBANG: 1
     #   shell: bash -el {0}
